@@ -38,4 +38,13 @@ public class MeleePlayer {
 		kills++;
 	}
 	
+	public void perfectStats(){
+		Player player = getPlayer();
+		player.setHealth(20);
+		player.setFoodLevel(20);
+		player.setSaturation(20);
+		player.setExhaustion(0);
+		player.setFireTicks(0);
+	}
+	
 }
