@@ -79,11 +79,11 @@ public class Melee extends JavaPlugin {
 		players.remove(uuid);
 	}
 	
-	public Lobby getLobby(String name){
+	public static Lobby getLobby(String name){
 		return lobbies.get(name);
 	}
 	
-	public GameInstance getGame(String name){
+	public static GameInstance getGame(String name){
 		return games.get(name);
 	}
 	
