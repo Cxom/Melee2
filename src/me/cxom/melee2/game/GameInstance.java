@@ -40,6 +40,7 @@ public class GameInstance implements Listener {
 	public GameInstance(MeleeArena arena){
 		this.arena = arena;
 		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
+		gamestate = GameState.WAITING;
 	}
 	
 	/*package*/ void start(Set<Player> players){
