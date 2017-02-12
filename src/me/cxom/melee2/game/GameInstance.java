@@ -78,18 +78,20 @@ public class GameInstance implements Listener {
 		gamestate = GameState.WAITING;
 	}
 	
-	public void removePlayer(Player player){
+	public boolean removePlayer(Player player){
 		if (players.contains(player.getUniqueId())){
 			//caching? TODO If you leave and rejoin while the match is still in progress, it saves your stats
 			movement.removePlayer(player);
 			players.remove(player.getUniqueId());
 			Melee.removePlayer(player);
 			PlayerProfile.restore(player);
+			if (players.size() == 1){
+				broadcast(Melee.CHAT_PREFIX + ChatColor.RED + "Too many people have left. Shutting down the game :/");
+				end();
+			}
+			return true;
 		}
-		if (players.size() == 1){
-			broadcast(Melee.CHAT_PREFIX + ChatColor.RED + "Too many people have left. Shutting down the game :/");
-			end();
-		}
+		return false;
 	}
 	
 	public void forceStop(){
@@ -129,7 +131,9 @@ public class GameInstance implements Listener {
 	@EventHandler
 	public void onPlayerLeaveGame(PlayerCommandPreprocessEvent e){
 		if (e.getMessage().equalsIgnoreCase("/melee leave")){
-			removePlayer(e.getPlayer());
+			if (!removePlayer(e.getPlayer())){
+				Melee.getLobby(arena.getName()).removePlayer(e.getPlayer());
+			};
 		}
 	}
 	
