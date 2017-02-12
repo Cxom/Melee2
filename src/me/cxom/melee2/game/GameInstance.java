@@ -23,20 +23,20 @@ import me.cxom.melee2.util.PlayerUtils;
 public class GameInstance implements Listener {
 
 	private final MeleeArena arena;
+	public MeleeArena getArena(){ return arena; }
 	
 	private Set<UUID> players = new HashSet<>();
 	
 	private GameState gamestate = GameState.STOPPED;
 	public GameState getGameState(){ return gamestate; }
-	       void setGameState(GameState gamestate){ this.gamestate = gamestate; }
-	       //package visibility allows lobby to set Gamestate.STARING
+	/*package*/ void setGameState(GameState gamestate){ this.gamestate = gamestate; } //allows lobby to set GameState.STARING
 	
 	public GameInstance(MeleeArena arena){
 		this.arena = arena;
 		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
 	}
 	
-	public void start(Set<Player> players){
+	/*package*/ void start(Set<Player> players){
 		CirculatingList<MeleeColor> colors = new CirculatingList<>(MeleeColor.getDefaults(), true);
 		for (Player player : players){
 			MeleePlayer mp = new MeleePlayer(player, colors.next());

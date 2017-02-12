@@ -16,6 +16,7 @@ import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.arena.configuration.ArenaManager;
 import me.cxom.melee2.events.custom.MeleeEventCaller;
 import me.cxom.melee2.game.GameInstance;
+import me.cxom.melee2.game.Lobby;
 import me.cxom.melee2.player.MeleePlayer;
 
 public class Melee extends JavaPlugin {
@@ -27,6 +28,7 @@ public class Melee extends JavaPlugin {
 	
 	private static Map<UUID, MeleePlayer> players = new HashMap<>();
 	
+	private static Map<String, Lobby> lobbies = new HashMap<>();
 	private static Map<String, GameInstance> games = new HashMap<>();
 	
 	@Override
@@ -35,7 +37,9 @@ public class Melee extends JavaPlugin {
 		Bukkit.getServer().getPluginManager().registerEvents(new MeleeEventCaller(), getPlugin());
 		//register events
 		for (MeleeArena arena : ArenaManager.getArenas()){
-			games.put(arena.getName(), new GameInstance(arena));
+			GameInstance game = new GameInstance(arena);
+			lobbies.put(arena.getName(), new Lobby(game));
+			games.put(arena.getName(), game);
 		}
 	}
 	
@@ -69,6 +73,10 @@ public class Melee extends JavaPlugin {
 	public static void removePlayer(Player player){ removePlayer(player.getUniqueId()); }
 	public static void removePlayer(UUID uuid){
 		players.remove(uuid);
+	}
+	
+	public Lobby getLobby(String name){
+		return lobbies.get(name);
 	}
 	
 	public GameInstance getGame(String name){
