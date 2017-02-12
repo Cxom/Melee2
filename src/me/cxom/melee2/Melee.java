@@ -39,6 +39,7 @@ public class Melee extends JavaPlugin {
 		Bukkit.getServer().getPluginManager().registerEvents(new MeleeEventCaller(), getPlugin());
 		Bukkit.getServer().getPluginManager().registerEvents(new MeleeMenu(), getPlugin());
 		//register events
+		ArenaManager.loadArenas();
 		for (MeleeArena arena : ArenaManager.getArenas()){
 			GameInstance game = new GameInstance(arena);
 			lobbies.put(arena.getName(), new Lobby(game));
