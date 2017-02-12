@@ -17,26 +17,24 @@ public class MeleeEventCaller implements Listener {
 	@EventHandler
 	public void onMeleeDeath(EntityDamageEvent e){
 		if (! (Melee.isPlayer(e.getEntity().getUniqueId()))) return;
-		Player player = (Player) e.getEntity();
+		Player killed = (Player) e.getEntity();
 		if (e.getCause() == DamageCause.FALL) return;
-		if (e.getFinalDamage() < player.getHealth()) return;
-		Bukkit.getServer().getPluginManager().callEvent(new MeleeDeathEvent(Melee.getPlayer(player), e));
-	}
-
-	@EventHandler
-	public void onMeleeKill(MeleeDeathEvent e){
-		EntityDamageEvent ede = e.getEntityDamageEvent();
-		if (! (ede instanceof EntityDamageByEntityEvent)) return;
-		EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) ede;
-		Entity killer = edbee.getDamager();
-		if (killer instanceof Player && Melee.isPlayer(killer.getUniqueId())){
-			Bukkit.getServer().getPluginManager().callEvent(new MeleeKillEvent(Melee.getPlayer(killer.getUniqueId()), e.getMeleePlayer(), edbee));
-		} else if (killer instanceof Arrow && ((Arrow) killer).getShooter() instanceof Player){
-			Player shooter = (Player) ((Arrow) killer).getShooter();
-			if (Melee.isPlayer(shooter)){
-				Bukkit.getServer().getPluginManager().callEvent(new MeleeKillEvent(Melee.getPlayer(shooter), e.getMeleePlayer(), edbee));
+		if (e.getFinalDamage() < killed.getHealth()) return;
+		if (e instanceof EntityDamageByEntityEvent){
+			EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) e;
+			Entity killer = edbee.getDamager();
+			if (killer instanceof Player && Melee.isPlayer(killer.getUniqueId())){
+				Bukkit.getServer().getPluginManager().callEvent(new MeleeKillEvent(Melee.getPlayer(killer.getUniqueId()), Melee.getPlayer(killed), edbee));
+				return;
+			} else if (killer instanceof Arrow && ((Arrow) killer).getShooter() instanceof Player){
+				Player shooter = (Player) ((Arrow) killer).getShooter();
+				if (Melee.isPlayer(shooter)){
+					Bukkit.getServer().getPluginManager().callEvent(new MeleeKillEvent(Melee.getPlayer(shooter), Melee.getPlayer(killed), edbee));
+					return;
+				}
 			}
 		}
+		Bukkit.getServer().getPluginManager().callEvent(new MeleeDeathEvent(Melee.getPlayer(killed), e));
 	}
 	
 }
