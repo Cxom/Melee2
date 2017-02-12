@@ -25,6 +25,11 @@ public class GameInstance implements Listener {
 	
 	private Set<UUID> players = new HashSet<>();
 	
+	private GameState gamestate = GameState.STOPPED;
+	public GameState getGameState(){ return gamestate; }
+	       void setGameState(GameState gamestate){ this.gamestate = gamestate; }
+	       //package visibility allows lobby to set Gamestate.STARING
+	
 	public GameInstance(MeleeArena arena){
 		this.arena = arena;
 		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
@@ -37,6 +42,7 @@ public class GameInstance implements Listener {
 			Melee.addPlayer(mp);
 			spawnPlayer(mp);
 		}
+		gamestate = GameState.RUNNING;
 	}
 	
 	public void spawnPlayer(MeleePlayer mp){
@@ -54,6 +60,7 @@ public class GameInstance implements Listener {
 		for (UUID uuid : players){
 			PlayerProfile.restore(uuid);
 		}
+		gamestate = GameState.WAITING;
 	}
 	
 	public void removePlayer(Player player){
@@ -67,6 +74,7 @@ public class GameInstance implements Listener {
 	public void forceStop(){
 		broadcast(Melee.CHAT_PREFIX + ChatColor.RED + "The game has been interrupted. Stopping . . .");
 		end();
+		gamestate = GameState.STOPPED;
 	}
 	
 	@EventHandler
