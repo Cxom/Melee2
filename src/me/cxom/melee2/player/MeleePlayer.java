@@ -9,10 +9,13 @@ public class MeleePlayer {
 
 	private final UUID uuid;
 	
+	private final MeleeColor color;
+	
 	private int kills = 0;
 	
-	public MeleePlayer(Player player){
+	public MeleePlayer(Player player, MeleeColor color){
 		uuid = player.getUniqueId();
+		this.color = color;
 	}
 	
 	public UUID getUniqueId(){
@@ -21,6 +24,10 @@ public class MeleePlayer {
 	
 	public Player getPlayer(){
 		return Bukkit.getPlayer(uuid);
+	}
+	
+	public MeleeColor getColor(){
+		return color;
 	}
 	
 	public int getKills(){
