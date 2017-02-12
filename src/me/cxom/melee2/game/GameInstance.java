@@ -18,6 +18,7 @@ import me.cxom.melee2.player.MeleeColor;
 import me.cxom.melee2.player.MeleePlayer;
 import me.cxom.melee2.player.PlayerProfile;
 import me.cxom.melee2.util.CirculatingList;
+import me.cxom.melee2.util.PlayerUtils;
 
 public class GameInstance implements Listener {
 
@@ -46,7 +47,7 @@ public class GameInstance implements Listener {
 	}
 	
 	public void spawnPlayer(MeleePlayer mp){
-		mp.perfectStats();
+		PlayerUtils.perfectStats(mp.getPlayer());
 		mp.getPlayer().teleport(arena.getSpawns().next());
 	}
 	
