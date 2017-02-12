@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
@@ -97,9 +98,13 @@ public class GameInstance implements Listener {
 		gamestate = GameState.STOPPED;
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.HIGH)
 	public void onMeleeKill(MeleeKillEvent e){
 		if (players.contains(e.getKiller().getUniqueId()) && players.contains(e.getKilledPlayer().getUniqueId())){
+			if (e.getKiller().equals(e.getKilledPlayer())){
+				onMeleeDeath(e);
+				return;
+			}
 			e.getEntityDamageByEntityEvent().setCancelled(true);
 			spawnPlayer(e.getKilledPlayer());
 			e.getKiller().incrementKills();	
@@ -113,9 +118,9 @@ public class GameInstance implements Listener {
 		}
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.NORMAL)
 	public void onMeleeDeath(MeleeDeathEvent e){
-		if (! (e instanceof MeleeKillEvent) && players.contains(e.getMeleePlayer().getUniqueId())){
+		if (players.contains(e.getMeleePlayer().getUniqueId())){
 			e.getEntityDamageEvent().setCancelled(true);
 			((Player) e.getEntityDamageEvent().getEntity()).setHealth(1);
 		}
