@@ -100,6 +100,7 @@ public class GameInstance implements Listener {
 	@EventHandler
 	public void onMeleeKill(MeleeKillEvent e){
 		if (players.contains(e.getKiller().getUniqueId()) && players.contains(e.getKilledPlayer().getUniqueId())){
+			e.getEntityDamageByEntityEvent().setCancelled(true);
 			spawnPlayer(e.getKilledPlayer());
 			e.getKiller().getPlayer().sendMessage(Melee.CHAT_PREFIX + ChatColor.GRAY + "You now have "
 													+ ChatColor.AQUA + e.getKiller().getKills()
