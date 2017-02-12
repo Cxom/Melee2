@@ -17,6 +17,7 @@ import me.cxom.melee2.arena.configuration.ArenaManager;
 import me.cxom.melee2.events.custom.MeleeEventCaller;
 import me.cxom.melee2.game.GameInstance;
 import me.cxom.melee2.game.Lobby;
+import me.cxom.melee2.player.MeleeMenu;
 import me.cxom.melee2.player.MeleePlayer;
 
 public class Melee extends JavaPlugin {
@@ -35,6 +36,7 @@ public class Melee extends JavaPlugin {
 	public void onEnable(){
 		plugin = this;
 		Bukkit.getServer().getPluginManager().registerEvents(new MeleeEventCaller(), getPlugin());
+		Bukkit.getServer().getPluginManager().registerEvents(new MeleeMenu(), getPlugin());
 		//register events
 		for (MeleeArena arena : ArenaManager.getArenas()){
 			GameInstance game = new GameInstance(arena);
