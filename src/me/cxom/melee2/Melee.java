@@ -19,6 +19,7 @@ import me.cxom.melee2.game.GameInstance;
 import me.cxom.melee2.game.Lobby;
 import me.cxom.melee2.player.MeleeMenu;
 import me.cxom.melee2.player.MeleePlayer;
+import me.cxom.melee2.player.PlayerProfile;
 
 public class Melee extends JavaPlugin {
 
@@ -57,6 +58,21 @@ public class Melee extends JavaPlugin {
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
+		if (label.equalsIgnoreCase("melee")){
+			if (args.length == 0){
+				if (! (sender instanceof Player)) return true;
+				if (PlayerProfile.isSaved((Player) sender)) return true;
+				((Player) sender).openInventory(MeleeMenu.getMenu());
+			} else if (args.length >= 2 && args[0].equalsIgnoreCase("join")){
+				if (! (sender instanceof Player)) return true;
+				Player player = (Player) sender;
+				if (! lobbies.containsKey(args[1])){
+					player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + " There is no game/arena named " + args[1] + "!");
+				} else {
+					lobbies.get(args[1]).addPlayer(player);
+				}
+			}
+		}
 		
 		return true;
 	}

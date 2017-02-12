@@ -2,3 +2,8 @@ name: Melee
 main: me.cxom.melee2.Melee
 version: 0.0
 description: Rendition 2 of the Minecraft minigame Melee
+
+commands:
+    melee:
+        usage: /melee [leave|join <game>]
+        description: For the Melee minigame.

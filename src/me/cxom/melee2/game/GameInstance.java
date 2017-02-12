@@ -9,6 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
 import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.MeleeArena;
@@ -102,6 +103,13 @@ public class GameInstance implements Listener {
 		if (! (e instanceof MeleeKillEvent) && players.contains(e.getMeleePlayer().getUniqueId())){
 			e.getEntityDamageEvent().setCancelled(true);
 			((Player) e.getEntityDamageEvent().getEntity()).setHealth(1);
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerLeaveGame(PlayerCommandPreprocessEvent e){
+		if (e.getMessage().equalsIgnoreCase("/melee leave")){
+			removePlayer(e.getPlayer());
 		}
 	}
 	
