@@ -69,6 +69,10 @@ public class GameInstance implements Listener {
 			Melee.removePlayer(player);
 			PlayerProfile.restore(player);
 		}
+		if (players.size() == 1){
+			broadcast(Melee.CHAT_PREFIX + ChatColor.RED + "Too many people have left. Shutting down the game :/");
+			end();
+		}
 	}
 	
 	public void forceStop(){
