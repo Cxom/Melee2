@@ -4,19 +4,21 @@ import java.util.List;
 
 import org.bukkit.Location;
 
+import me.cxom.melee2.util.CirculatingList;
+
 public class MeleeArena {
 
 	private final String name;
 	private final Location pregameLobby;
 	private final int playersToStart;
-	private final List<Location> spawns;
+	private final CirculatingList<Location> spawns;
 	private final int killsToEnd;
 	
 	public MeleeArena(String name, Location pregameLobby, int playersToStart, List<Location> spawns, int killsToEnd){
 		this.name = name;
 		this.pregameLobby = pregameLobby;
 		this.playersToStart = playersToStart;
-		this.spawns = spawns;
+		this.spawns = new CirculatingList<Location>(spawns, true);
 		this.killsToEnd = killsToEnd;
 	}
 	
@@ -32,7 +34,7 @@ public class MeleeArena {
 		return playersToStart;
 	}
 
-	public List<Location> getSpawns() {
+	public CirculatingList<Location> getSpawns() {
 		return spawns;
 	}
 
