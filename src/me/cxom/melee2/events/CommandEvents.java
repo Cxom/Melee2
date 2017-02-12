@@ -24,11 +24,9 @@ public class CommandEvents implements Listener{
 		Player player = e.getPlayer();
 		String command = e.getMessage().toLowerCase() + " ";
 		if (PlayerProfile.isSaved(player) && !player.isOp()){
-			if (cmds.contains(command.split(" ")[0]) || (command.startsWith("jailbreak leave"))) {
-				return;
-			}else{
+			if (! (cmds.contains(command.split(" ")[0]) || (command.startsWith("melee leave")))) {
 				e.setCancelled(true);
-				player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "You do not have permission to use non-messaging commands in Jailbreak. If you wish to leave the match, do /jailbreak leave");
+				player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "You do not have permission to use non-messaging commands in Melee. If you wish to leave the match, do /melee leave");
 			}
 		}
 		
