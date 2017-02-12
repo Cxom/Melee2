@@ -34,6 +34,8 @@ public class Lobby {
 		player.setInvulnerable(true);
 		player.setGameMode(GameMode.SURVIVAL);
 		player.setFlying(false);
+		player.setLevel(0);
+		player.setExp(0);
 		PlayerUtils.perfectStats(player);
 		player.getInventory().clear();
 		if (game.getGameState() == GameState.WAITING && waitingPlayers.size() >= game.getArena().getPlayersToStart()){
