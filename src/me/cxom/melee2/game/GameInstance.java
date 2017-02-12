@@ -48,6 +48,7 @@ public class GameInstance implements Listener {
 		for (Player player : players){
 			MeleePlayer mp = new MeleePlayer(player, colors.next());
 			Melee.addPlayer(mp);
+			this.players.add(player.getUniqueId());
 			spawnPlayer(mp);
 			movement.addPlayer(player);
 			player.setInvulnerable(false);
@@ -72,6 +73,7 @@ public class GameInstance implements Listener {
 			Melee.removePlayer(uuid);
 			PlayerProfile.restore(uuid);
 		}
+		players.clear();
 		gamestate = GameState.WAITING;
 	}
 	
@@ -79,6 +81,7 @@ public class GameInstance implements Listener {
 		if (players.contains(player.getUniqueId())){
 			//caching? TODO If you leave and rejoin while the match is still in progress, it saves your stats
 			movement.removePlayer(player);
+			players.remove(player.getUniqueId());
 			Melee.removePlayer(player);
 			PlayerProfile.restore(player);
 		}
