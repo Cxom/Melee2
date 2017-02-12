@@ -102,10 +102,10 @@ public class GameInstance implements Listener {
 		if (players.contains(e.getKiller().getUniqueId()) && players.contains(e.getKilledPlayer().getUniqueId())){
 			e.getEntityDamageByEntityEvent().setCancelled(true);
 			spawnPlayer(e.getKilledPlayer());
+			e.getKiller().incrementKills();	
 			e.getKiller().getPlayer().sendMessage(Melee.CHAT_PREFIX + ChatColor.GRAY + "You now have "
 													+ ChatColor.AQUA + e.getKiller().getKills()
-													+ ChatColor.GRAY + " kills.");
-			e.getKiller().incrementKills();		
+													+ ChatColor.GRAY + " kill(s).");
 			if (e.getKiller().getKills() == arena.getKillsToEnd()){
 				broadcast(Melee.CHAT_PREFIX + e.getKiller().getColor().getChatColor() + e.getKiller().getPlayer().getName() + " has won the game!");
 				end();
