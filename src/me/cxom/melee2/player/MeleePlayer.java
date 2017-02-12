@@ -41,4 +41,10 @@ public class MeleePlayer {
 		kills++;
 	}
 	
+	@Override
+	public boolean equals(Object o){
+		if (! (o instanceof MeleePlayer)) return false;
+		return uuid.equals(((MeleePlayer) o).getUniqueId());
+	}
+	
 }
