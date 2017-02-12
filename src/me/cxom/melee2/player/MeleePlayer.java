@@ -5,6 +5,8 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
+import me.cxom.melee2.util.InventoryUtils;
+
 public class MeleePlayer {
 
 	private final UUID uuid;
@@ -14,8 +16,9 @@ public class MeleePlayer {
 	private int kills = 0;
 	
 	public MeleePlayer(Player player, MeleeColor color){
-		uuid = player.getUniqueId();
+		this.uuid = player.getUniqueId();
 		this.color = color;
+		InventoryUtils.equipPlayer(player, color);
 	}
 	
 	public UUID getUniqueId(){
