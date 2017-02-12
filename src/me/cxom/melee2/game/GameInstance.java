@@ -43,6 +43,7 @@ public class GameInstance implements Listener {
 			MeleePlayer mp = new MeleePlayer(player, colors.next());
 			Melee.addPlayer(mp);
 			spawnPlayer(mp);
+			player.setInvulnerable(false);
 		}
 		gamestate = GameState.RUNNING;
 	}
