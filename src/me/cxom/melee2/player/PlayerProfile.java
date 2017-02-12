@@ -22,10 +22,11 @@ public class PlayerProfile {
 		return saved.containsKey(player.getUniqueId());
 	}
 	
-	public static void restore(Player player){
-		if (saved.containsKey(player.getUniqueId())){
-			saved.get(player.getUniqueId()).restore();
-			saved.remove(player.getUniqueId());
+	public static void restore(Player player){ restore(player.getUniqueId()); }
+	public static void restore(UUID uuid){
+		if (saved.containsKey(uuid)){
+			saved.get(uuid).restore();
+			saved.remove(uuid);
 		}
 	}
 	
