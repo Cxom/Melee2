@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -14,6 +15,8 @@ import me.cxom.melee2.player.MeleePlayer;
 
 public class Melee extends JavaPlugin {
 
+	public static final String CHAT_PREFIX = ChatColor.DARK_GREEN + "[" + ChatColor.WHITE + "Melee" + ChatColor.DARK_GREEN + "]" + ChatColor.RESET + " ";
+	
 	private static Plugin plugin;
 	public static Plugin getPlugin(){ return plugin; }
 	
