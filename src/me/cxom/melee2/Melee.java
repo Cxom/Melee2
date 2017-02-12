@@ -45,8 +45,12 @@ public class Melee extends JavaPlugin {
 	
 	@Override
 	public void onDisable(){
-		//force stop matches
-		//restore players
+		for (Lobby lobby : lobbies.values()){
+			lobby.removeAll();
+		}
+		for (GameInstance game : games.values()){
+			game.forceStop();
+		}
 	}
 	
 	@Override
