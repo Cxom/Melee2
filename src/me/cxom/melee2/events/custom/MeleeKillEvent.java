@@ -1,14 +1,13 @@
 package me.cxom.melee2.events.custom;
 
 import org.bukkit.entity.Arrow;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 import me.cxom.melee2.player.MeleePlayer;
 
-public class MeleeKillEvent extends Event{
+public class MeleeKillEvent extends MeleeDeathEvent{
 	////
 	private static final HandlerList handlers = new HandlerList();
 
@@ -26,9 +25,10 @@ public class MeleeKillEvent extends Event{
 	private final EntityDamageByEntityEvent edbee;
 	
 	public MeleeKillEvent(MeleePlayer killer, MeleePlayer killed, EntityDamageByEntityEvent edbee) {
-			this.killer = killer;
-			this.killed = killed;
-			this.edbee = edbee;
+		super(killed, edbee);	
+		this.killer = killer;
+		this.killed = killed;
+		this.edbee = edbee;
 	}
 
 	public MeleePlayer getKiller() {
