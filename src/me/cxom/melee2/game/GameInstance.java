@@ -11,6 +11,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+import com.trinoxtion.movement.MovementPlusPlus;
+import com.trinoxtion.movement.MovementSystem;
+
 import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.events.custom.MeleeDeathEvent;
@@ -28,6 +31,8 @@ public class GameInstance implements Listener {
 	
 	private Set<UUID> players = new HashSet<>();
 	
+	private MovementSystem movement = MovementPlusPlus.CXOMS_MOVEMENT;
+	
 	private GameState gamestate = GameState.STOPPED;
 	public GameState getGameState(){ return gamestate; }
 	/*package*/ void setGameState(GameState gamestate){ this.gamestate = gamestate; } //allows lobby to set GameState.STARING
@@ -43,6 +48,7 @@ public class GameInstance implements Listener {
 			MeleePlayer mp = new MeleePlayer(player, colors.next());
 			Melee.addPlayer(mp);
 			spawnPlayer(mp);
+			movement.addPlayer(player);
 			player.setInvulnerable(false);
 		}
 		gamestate = GameState.RUNNING;
@@ -61,6 +67,8 @@ public class GameInstance implements Listener {
 	
 	private void end(){
 		for (UUID uuid : players){
+			movement.removePlayer(uuid);
+			Melee.removePlayer(uuid);
 			PlayerProfile.restore(uuid);
 		}
 		gamestate = GameState.WAITING;
@@ -69,6 +77,7 @@ public class GameInstance implements Listener {
 	public void removePlayer(Player player){
 		if (players.contains(player.getUniqueId())){
 			//caching? TODO If you leave and rejoin while the match is still in progress, it saves your stats
+			movement.removePlayer(player);
 			Melee.removePlayer(player);
 			PlayerProfile.restore(player);
 		}
