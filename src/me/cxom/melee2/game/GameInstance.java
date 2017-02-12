@@ -46,18 +46,18 @@ public class GameInstance implements Listener {
 		gamestate = GameState.RUNNING;
 	}
 	
-	public void spawnPlayer(MeleePlayer mp){
+	private void spawnPlayer(MeleePlayer mp){
 		PlayerUtils.perfectStats(mp.getPlayer());
 		mp.getPlayer().teleport(arena.getSpawns().next());
 	}
 	
-	public void broadcast(String message){
+	private void broadcast(String message){
 		for (UUID uuid : players){
 			Bukkit.getPlayer(uuid).sendMessage(message);
 		}
 	}
 	
-	public void end(){
+	private void end(){
 		for (UUID uuid : players){
 			PlayerProfile.restore(uuid);
 		}
