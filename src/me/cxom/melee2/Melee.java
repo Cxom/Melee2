@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -11,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import me.cxom.melee2.events.custom.MeleeEventCaller;
 import me.cxom.melee2.player.MeleePlayer;
 
 public class Melee extends JavaPlugin {
@@ -25,6 +27,7 @@ public class Melee extends JavaPlugin {
 	@Override
 	public void onEnable(){
 		plugin = this;
+		Bukkit.getServer().getPluginManager().registerEvents(new MeleeEventCaller(), getPlugin());
 		//register events
 	}
 	
