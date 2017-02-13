@@ -1,6 +1,8 @@
 package me.cxom.melee2.events.custom;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -19,6 +21,25 @@ public class MeleeKillEvent extends MeleeDeathEvent{
 		return handlers;
 	}
 	////
+	
+	public static enum AttackMethod{
+		
+		SLAY("⚔"),
+		SHOOT("➵"),
+		PUNCH("ლ");//ᕗ
+		//ツ 
+		
+		private final String icon;
+		
+		private AttackMethod(String icon){
+			this.icon = icon;
+		}
+		
+		public String getIcon(){
+			return icon;
+		}
+		
+	}
 	
 	private final MeleePlayer killer;
 	private final MeleePlayer killed;
@@ -45,6 +66,12 @@ public class MeleeKillEvent extends MeleeDeathEvent{
 	
 	public boolean isBowKill(){
 		return edbee.getDamager() instanceof Arrow;
+	}
+	
+	public AttackMethod getAttackMethod(){
+		return isBowKill() ? AttackMethod.SHOOT :
+			   ((Player) edbee.getDamager()).getInventory().getItemInMainHand().getType() == Material.STONE_SWORD ? AttackMethod.SLAY : 
+			   AttackMethod.PUNCH;
 	}
 	
 }
