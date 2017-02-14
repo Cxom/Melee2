@@ -1,16 +1,20 @@
 package me.cxom.melee2.game;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import com.trinoxtion.movement.MovementPlusPlus;
 import com.trinoxtion.movement.MovementSystem;
@@ -24,6 +28,7 @@ import me.cxom.melee2.player.MeleeColor;
 import me.cxom.melee2.player.MeleePlayer;
 import me.cxom.melee2.player.PlayerProfile;
 import me.cxom.melee2.util.CirculatingList;
+import me.cxom.melee2.util.FireworkUtils;
 import me.cxom.melee2.util.PlayerUtils;
 
 public class GameInstance implements Listener {
@@ -119,6 +124,7 @@ public class GameInstance implements Listener {
 				return;
 			}
 			e.getEntityDamageByEntityEvent().setCancelled(true);
+			FireworkUtils.detontateInstantly(FireworkUtils.spawnFirework(killed.getPlayer().getLocation().add(0, 1.1, 0), killed.getColor(), killer.getColor(), 0));
 			spawnPlayer(killed);
 			killer.incrementKills();	
 			killer.getPlayer().sendMessage(Melee.CHAT_PREFIX + ChatColor.GRAY + "You now have "
@@ -135,8 +141,28 @@ public class GameInstance implements Listener {
 			killfeedMessage += ":" + killed.getKills();
 			killfeed.sendMessage(killfeedMessage);
 			if (killer.getKills() == arena.getKillsToEnd()){
-				broadcast(Melee.CHAT_PREFIX + killer.getColor().getChatColor() + killer.getPlayer().getName() + " has won the game!");
-				end();
+				for (UUID uuid : players){
+					Player player = Bukkit.getPlayer(uuid);
+					player.setGameMode(GameMode.ADVENTURE);
+					player.setAllowFlight(true);
+					player.setFlying(true);
+					player.sendMessage(Melee.CHAT_PREFIX + killer.getColor().getChatColor() + killer.getPlayer().getName() + " has won the game!");
+				}
+				Color winnersColor = killer.getColor().getBukkitColor();
+				new BukkitRunnable(){
+					int i = 20; //10 seconds
+					Random r = new Random();
+					@Override
+					public void run(){
+						if (i <= 0){
+							this.cancel();
+							end();
+							return;
+						}
+						FireworkUtils.spawnFirework(arena.getSpawns().next(), winnersColor, r.nextInt(2) + 2);
+						i--;
+					}
+				}.runTaskTimer(Melee.getPlugin(), 10, 10);
 			}
 		}
 	}

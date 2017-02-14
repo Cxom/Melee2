@@ -16,7 +16,7 @@ public class CancelledEvents implements Listener{
 	@EventHandler
 	public void onFallDamage(EntityDamageEvent e) {
 		if (e.getEntity() instanceof Player
-				&& e.getCause() == DamageCause.FALL
+				&& (e.getCause() == DamageCause.FALL || e.getCause() == DamageCause.ENTITY_EXPLOSION) 
 				&& Melee.isPlayer((Player) e.getEntity())){
 			e.setCancelled(true);
 		}
