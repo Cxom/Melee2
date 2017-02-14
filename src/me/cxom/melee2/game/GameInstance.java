@@ -19,6 +19,7 @@ import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.events.custom.MeleeDeathEvent;
 import me.cxom.melee2.events.custom.MeleeKillEvent;
+import me.cxom.melee2.gui.ScrollingScoreboard;
 import me.cxom.melee2.player.MeleeColor;
 import me.cxom.melee2.player.MeleePlayer;
 import me.cxom.melee2.player.PlayerProfile;
@@ -33,6 +34,8 @@ public class GameInstance implements Listener {
 	private Set<UUID> players = new HashSet<>();
 	
 	private MovementSystem movement = MovementPlusPlus.CXOMS_MOVEMENT;
+	
+	private final ScrollingScoreboard killfeed = new ScrollingScoreboard(Melee.CHAT_PREFIX);
 	
 	private GameState gamestate = GameState.STOPPED;
 	public GameState getGameState(){ return gamestate; }
@@ -52,6 +55,7 @@ public class GameInstance implements Listener {
 			this.players.add(player.getUniqueId());
 			spawnPlayer(mp);
 			movement.addPlayer(player);
+			killfeed.addPlayer(player);
 			player.setInvulnerable(false);
 		}
 		gamestate = GameState.RUNNING;
@@ -70,6 +74,7 @@ public class GameInstance implements Listener {
 	
 	private void end(){
 		for (UUID uuid : players){
+			killfeed.removePlayer(Bukkit.getPlayer(uuid));
 			movement.removePlayer(uuid);
 			Melee.removePlayer(uuid);
 			PlayerProfile.restore(uuid);
@@ -81,6 +86,7 @@ public class GameInstance implements Listener {
 	public boolean removePlayer(Player player){
 		if (players.contains(player.getUniqueId())){
 			//caching? TODO If you leave and rejoin while the match is still in progress, it saves your stats
+			killfeed.removePlayer(player);
 			movement.removePlayer(player);
 			players.remove(player.getUniqueId());
 			Melee.removePlayer(player);
@@ -103,18 +109,28 @@ public class GameInstance implements Listener {
 	@EventHandler(priority = EventPriority.HIGH)
 	public void onMeleeKill(MeleeKillEvent e){
 		if (players.contains(e.getKiller().getUniqueId()) && players.contains(e.getKilledPlayer().getUniqueId())){
-			if (e.getKiller().equals(e.getKilledPlayer())){
+			MeleePlayer killer = e.getKiller();
+			MeleePlayer killed = e.getKilledPlayer();
+			if (killer.equals(killed)){
 				onMeleeDeath(e);
 				return;
 			}
 			e.getEntityDamageByEntityEvent().setCancelled(true);
-			spawnPlayer(e.getKilledPlayer());
-			e.getKiller().incrementKills();	
-			e.getKiller().getPlayer().sendMessage(Melee.CHAT_PREFIX + ChatColor.GRAY + "You now have "
-													+ ChatColor.AQUA + e.getKiller().getKills()
+			spawnPlayer(killed);
+			killer.incrementKills();	
+			killer.getPlayer().sendMessage(Melee.CHAT_PREFIX + ChatColor.GRAY + "You now have "
+													+ ChatColor.AQUA + killer.getKills()
 													+ ChatColor.GRAY + " kill(s).");
-			if (e.getKiller().getKills() == arena.getKillsToEnd()){
-				broadcast(Melee.CHAT_PREFIX + e.getKiller().getColor().getChatColor() + e.getKiller().getPlayer().getName() + " has won the game!");
+			String killfeedMessage = String.format("%s%s:%d %s %s%s",
+					killer.getColor().getChatColor(), killer.getPlayer().getName(), killer.getKills(),
+					ChatColor.WHITE + e.getAttackMethod().getIcon(),
+					killed.getColor().getChatColor(), killed.getPlayer().getName());
+			int length = 39 - String.valueOf(killed.getKills()).length(); //40 chars max - 1 for color = 39
+			killfeedMessage = killfeedMessage.length() > length ? killfeedMessage.substring(0, length) : killfeedMessage;
+			killfeedMessage += ":" + killed.getKills();
+			killfeed.sendMessage(killfeedMessage);
+			if (killer.getKills() == arena.getKillsToEnd()){
+				broadcast(Melee.CHAT_PREFIX + killer.getColor().getChatColor() + killer.getPlayer().getName() + " has won the game!");
 				end();
 			}
 		}
