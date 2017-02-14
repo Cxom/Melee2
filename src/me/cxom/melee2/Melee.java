@@ -14,6 +14,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.arena.configuration.ArenaManager;
+import me.cxom.melee2.events.CancelledEvents;
+import me.cxom.melee2.events.CommandEvents;
 import me.cxom.melee2.events.custom.MeleeEventCaller;
 import me.cxom.melee2.game.GameInstance;
 import me.cxom.melee2.game.Lobby;
@@ -37,6 +39,8 @@ public class Melee extends JavaPlugin {
 	public void onEnable(){
 		plugin = this;
 		Bukkit.getServer().getPluginManager().registerEvents(new MeleeEventCaller(), getPlugin());
+		Bukkit.getServer().getPluginManager().registerEvents(new CancelledEvents(), getPlugin());
+		Bukkit.getServer().getPluginManager().registerEvents(new CommandEvents(), getPlugin());
 		Bukkit.getServer().getPluginManager().registerEvents(new MeleeMenu(), getPlugin());
 		//register events
 		ArenaManager.loadArenas();

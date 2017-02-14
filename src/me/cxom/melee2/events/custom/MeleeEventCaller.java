@@ -8,7 +8,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 
 import me.cxom.melee2.Melee;
 
@@ -18,7 +17,6 @@ public class MeleeEventCaller implements Listener {
 	public void onMeleeDeath(EntityDamageEvent e){
 		if (! (Melee.isPlayer(e.getEntity().getUniqueId()))) return;
 		Player killed = (Player) e.getEntity();
-		if (e.getCause() == DamageCause.FALL) return;
 		if (e.getFinalDamage() < killed.getHealth()) return;
 		if (e instanceof EntityDamageByEntityEvent){
 			EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) e;
