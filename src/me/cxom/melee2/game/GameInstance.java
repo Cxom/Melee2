@@ -57,6 +57,9 @@ public class GameInstance implements Listener {
 			movement.addPlayer(player);
 			killfeed.addPlayer(player);
 			player.setInvulnerable(false);
+			player.sendMessage(mp.getColor().getChatColor() + "" + ChatColor.BOLD + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+			player.sendMessage(mp.getColor().getChatColor() + "You are " + mp.getColor().getChatColor().name().replace('_', ' ') + "!");
+			player.sendMessage(mp.getColor().getChatColor() + "" + ChatColor.BOLD + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 		}
 		gamestate = GameState.RUNNING;
 	}
@@ -121,6 +124,8 @@ public class GameInstance implements Listener {
 			killer.getPlayer().sendMessage(Melee.CHAT_PREFIX + ChatColor.GRAY + "You now have "
 													+ ChatColor.AQUA + killer.getKills()
 													+ ChatColor.GRAY + " kill(s).");
+			killed.getPlayer().sendMessage(Melee.CHAT_PREFIX + killer.getColor().getChatColor() + killer.getPlayer().getName()
+												 	+ " (" + killer.getKills() + ") killed you!");
 			String killfeedMessage = String.format("%s%s:%d %s %s%s",
 					killer.getColor().getChatColor(), killer.getPlayer().getName(), killer.getKills(),
 					ChatColor.WHITE + e.getAttackMethod().getIcon(),
