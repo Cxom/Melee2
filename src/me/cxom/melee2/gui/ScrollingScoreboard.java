@@ -33,35 +33,34 @@ public class ScrollingScoreboard {
 		sidebar.setDisplayName(title);
 	}
 
-	public void sendMessage(final String msg){
-		if (activeMessages.contains(msg) || msg.equals("a")){
-			this.sendMessage("*" + msg);
+	public void sendMessage(final String newMessage){
+		if (activeMessages.contains(newMessage)){
+			this.sendMessage("*" + newMessage);
 			return;
 		}
 		
 		Iterator<String> itr = activeMessages.iterator();
 		while(itr.hasNext()){
-			String s = itr.next();
-			Score score = sidebar.getScore(ChatColor.RED + s);
+			String message = itr.next();
+			Score score = sidebar.getScore(message);
 			if(score.getScore() - 1 <= 0){
 				itr.remove();
-				clearMessage(s);
+				clearMessage(message);
 			}else{
 				score.setScore(score.getScore() - 1);
 			}
 		}
-		final Score scroller = sidebar.getScore(ChatColor.RED + msg);
+		final Score scroller = sidebar.getScore(ChatColor.RED + newMessage);
 		scroller.setScore(10);
-		activeMessages.offer(msg);
+		activeMessages.offer(newMessage);
 		new BukkitRunnable(){
 			public void run(){
-				if(activeMessages.contains(msg)){
-					activeMessages.remove(msg);	
-					clearMessage(msg);
+				if(activeMessages.contains(newMessage)){
+					activeMessages.remove(newMessage);	
+					clearMessage(newMessage);
 				}
 			}
 		}.runTaskLater(Melee.getPlugin(), 120);
-	
 	}
 	
 	private void clearMessage(String msg){
