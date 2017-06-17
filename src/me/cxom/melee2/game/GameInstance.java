@@ -151,7 +151,7 @@ public class GameInstance implements Listener {
 				}
 				Color winnersColor = killer.getColor().getBukkitColor();
 				new BukkitRunnable(){
-					int i = 20; //10 seconds
+					int i = 10; //10 seconds
 					Random r = new Random();
 					@Override
 					public void run(){
@@ -163,7 +163,7 @@ public class GameInstance implements Listener {
 						FireworkUtils.spawnFirework(arena.getSpawns().next(), winnersColor, r.nextInt(2) + 2);
 						i--;
 					}
-				}.runTaskTimer(Melee.getPlugin(), 10, 10);
+				}.runTaskTimer(Melee.getPlugin(), 10, 20);
 			}
 		}
 	}
