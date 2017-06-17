@@ -24,6 +24,7 @@ import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.events.custom.MeleeDeathEvent;
 import me.cxom.melee2.events.custom.MeleeKillEvent;
+import me.cxom.melee2.gui.MeleeBossBar;
 import me.cxom.melee2.gui.ScrollingScoreboard;
 import me.cxom.melee2.player.MeleeColor;
 import me.cxom.melee2.player.MeleePlayer;
@@ -41,6 +42,9 @@ public class GameInstance implements Listener {
 	
 	private MovementSystem movement = MovementPlusPlus.CXOMS_MOVEMENT;
 	
+	private final MeleeBossBar bossbar;
+	private int mostKills = 0;
+	
 	private final ScrollingScoreboard killfeed = new ScrollingScoreboard(Melee.CHAT_PREFIX);
 	
 	private GameState gamestate = GameState.STOPPED;
@@ -51,6 +55,7 @@ public class GameInstance implements Listener {
 		this.arena = arena;
 		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
 		gamestate = GameState.WAITING;
+		bossbar = new MeleeBossBar(ChatColor.WHITE + "Now playing on " + ChatColor.ITALIC + arena.getName() + ChatColor.RESET + "!");
 	}
 	
 	/*package*/ void start(Set<Player> players){
@@ -61,6 +66,7 @@ public class GameInstance implements Listener {
 			this.players.add(player.getUniqueId());
 			spawnPlayer(mp);
 			movement.addPlayer(player);
+			bossbar.addPlayer(player);
 			killfeed.addPlayer(player);
 			player.setInvulnerable(false);
 			player.sendMessage(mp.getColor().getChatColor() + "" + ChatColor.BOLD + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -88,7 +94,9 @@ public class GameInstance implements Listener {
 			Melee.removePlayer(uuid);
 			PlayerProfile.restore(uuid);
 		}
+		bossbar.removeAll();
 		players.clear();
+		mostKills = 0;
 		gamestate = GameState.WAITING;
 	}
 	
@@ -96,6 +104,7 @@ public class GameInstance implements Listener {
 		if (players.contains(player.getUniqueId())){
 			//caching? TODO If you leave and rejoin while the match is still in progress, it saves your stats
 			killfeed.removePlayer(player);
+			bossbar.removePlayer(player);
 			movement.removePlayer(player);
 			players.remove(player.getUniqueId());
 			Melee.removePlayer(player);
@@ -127,7 +136,14 @@ public class GameInstance implements Listener {
 			e.getEntityDamageByEntityEvent().setCancelled(true);
 			FireworkUtils.detontateInstantly(FireworkUtils.spawnFirework(killed.getPlayer().getLocation().add(0, 1.1, 0), killed.getColor(), killer.getColor(), 0));
 			spawnPlayer(killed);
-			killer.incrementKills();	
+			killer.incrementKills();
+			if (killer.getKills() > mostKills){
+				bossbar.setLeader(killer);
+				mostKills = killer.getKills();
+			} else if (killer.getKills() == mostKills){
+				bossbar.setTier(killer);
+			}
+			
 			killer.getPlayer().sendMessage(Melee.CHAT_PREFIX + ChatColor.GRAY + "You now have "
 													+ ChatColor.AQUA + killer.getKills()
 													+ ChatColor.GRAY + " kill(s).");
