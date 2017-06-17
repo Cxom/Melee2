@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -171,7 +172,9 @@ public class GameInstance implements Listener {
 	public void onMeleeDeath(MeleeDeathEvent e){
 		if (players.contains(e.getMeleePlayer().getUniqueId())){
 			e.getEntityDamageEvent().setCancelled(true);
-			((Player) e.getEntityDamageEvent().getEntity()).setHealth(1);
+			if (e.getEntityDamageEvent().getCause() != DamageCause.FALL){
+				((Player) e.getEntityDamageEvent().getEntity()).setHealth(1);
+			}
 		}
 	}
 	
