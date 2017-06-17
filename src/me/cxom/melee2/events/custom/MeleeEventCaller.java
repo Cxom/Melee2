@@ -26,6 +26,7 @@ public class MeleeEventCaller implements Listener {
 				return;
 			} else if (killer instanceof Arrow && ((Arrow) killer).getShooter() instanceof Player){
 				Player shooter = (Player) ((Arrow) killer).getShooter();
+				killer.remove();
 				if (Melee.isPlayer(shooter)){
 					Bukkit.getServer().getPluginManager().callEvent(new MeleeKillEvent(Melee.getPlayer(shooter), Melee.getPlayer(killed), edbee));
 					return;
