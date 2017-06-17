@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -28,6 +29,13 @@ public class ArenaLoader {
 			pregameLobby = getLocation(arenacfg.getConfigurationSection("lobby"));
 		} else {
 			pregameLobby = spawns.get(0);
+		}
+		
+		boolean relative = arenacfg.isConfigurationSection("relative");
+		if (relative){
+			Location anchor = getLocation(arenacfg.getConfigurationSection("relative"));
+			spawns.stream().map((Location l) -> { return l.add(anchor); }).collect(Collectors.toList());
+			pregameLobby.add(anchor);
 		}
 		
 		int playersToStart = arenacfg.getInt("playersToStart", 2);
