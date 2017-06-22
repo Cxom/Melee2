@@ -15,6 +15,8 @@ public class MeleeBossBar {
 
 	private BossBar bossbar = Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SOLID);
 	
+	public MeleeBossBar(){}
+	
 	public MeleeBossBar(String title){
 		bossbar.setTitle(title);
 	}

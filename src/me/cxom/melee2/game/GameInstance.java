@@ -55,11 +55,12 @@ public class GameInstance implements Listener {
 		this.arena = arena;
 		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
 		gamestate = GameState.WAITING;
-		bossbar = new MeleeBossBar(ChatColor.WHITE + "Now playing on " + ChatColor.ITALIC + arena.getName() + ChatColor.RESET + "!");
+		bossbar = new MeleeBossBar();
 	}
 	
 	/*package*/ void start(Set<Player> players){
 		CirculatingList<MeleeColor> colors = new CirculatingList<>(MeleeColor.getDefaults(), true);
+		bossbar.setMessage(ChatColor.WHITE + "Now playing on " + ChatColor.ITALIC + arena.getName() + ChatColor.RESET + "!");
 		for (Player player : players){
 			MeleePlayer mp = new MeleePlayer(player, colors.next());
 			Melee.addPlayer(mp);
@@ -158,12 +159,14 @@ public class GameInstance implements Listener {
 			killfeedMessage += ":" + killed.getKills();
 			killfeed.sendMessage(killfeedMessage);
 			if (killer.getKills() == arena.getKillsToEnd()){
+				String winMessage = killer.getColor().getChatColor() + killer.getPlayer().getName() + ChatColor.WHITE + " has won the game!";
+				bossbar.setMessage(winMessage);
 				for (UUID uuid : players){
 					Player player = Bukkit.getPlayer(uuid);
 					player.setGameMode(GameMode.ADVENTURE);
 					player.setAllowFlight(true);
 					player.setFlying(true);
-					player.sendMessage(Melee.CHAT_PREFIX + killer.getColor().getChatColor() + killer.getPlayer().getName() + " has won the game!");
+					player.sendMessage(Melee.CHAT_PREFIX + winMessage);
 				}
 				Color winnersColor = killer.getColor().getBukkitColor();
 				new BukkitRunnable(){
