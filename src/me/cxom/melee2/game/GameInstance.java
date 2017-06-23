@@ -15,6 +15,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.trinoxtion.movement.MovementPlusPlus;
@@ -204,6 +205,13 @@ public class GameInstance implements Listener {
 				Melee.getLobby(arena.getName()).removePlayer(e.getPlayer());
 			};
 		}
+	}
+	
+	@EventHandler
+	public void onPlayerLeaveServer(PlayerQuitEvent e){
+		if (!removePlayer(e.getPlayer())){
+			Melee.getLobby(arena.getName()).removePlayer(e.getPlayer());
+		};
 	}
 	
 }
