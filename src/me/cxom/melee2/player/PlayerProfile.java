@@ -10,6 +10,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import me.cxom.melee2.util.InventoryUtils;
+
 public class PlayerProfile {
 
 	private static Map<UUID, PlayerProfile> saved = new HashMap<>();
@@ -43,6 +45,7 @@ public class PlayerProfile {
 	private final Location location;
 	private final GameMode gamemode;
 	private final boolean flying;
+	private final boolean invulnerable;
 	private final int xpLvl;
 	private final float xp;
 	private final double health;
@@ -57,12 +60,14 @@ public class PlayerProfile {
 		this.location = player.getLocation();
 		this.gamemode = player.getGameMode();
 		this.flying = player.isFlying();
+		this.invulnerable = player.isInvulnerable();
 		this.xpLvl = player.getLevel();
 		this.xp = player.getExp();
 		this.health = player.getHealth();
 		this.hunger = player.getFoodLevel();
 		this.saturation = player.getSaturation();
 		this.exhaustion = player.getExhaustion();
+		InventoryUtils.backupInventory(player);
 	}
 	
 	private void restore(){
@@ -71,6 +76,7 @@ public class PlayerProfile {
 		player.getInventory().setArmorContents(armor);
 		player.setGameMode(gamemode);
 		player.setFlying(flying);
+		player.setInvulnerable(invulnerable);
 		player.setLevel(xpLvl);
 		player.setExp(xp);
 		player.setHealth(health);

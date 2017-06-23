@@ -22,6 +22,7 @@ import me.cxom.melee2.game.Lobby;
 import me.cxom.melee2.player.MeleeMenu;
 import me.cxom.melee2.player.MeleePlayer;
 import me.cxom.melee2.player.PlayerProfile;
+import me.cxom.melee2.util.InventoryUtils;
 
 public class Melee extends JavaPlugin {
 
@@ -61,6 +62,7 @@ public class Melee extends JavaPlugin {
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
 		if (label.equalsIgnoreCase("melee")){
@@ -68,6 +70,13 @@ public class Melee extends JavaPlugin {
 				if (! (sender instanceof Player)) return true;
 				if (PlayerProfile.isSaved((Player) sender)) return true;
 				((Player) sender).openInventory(MeleeMenu.getMenu());
+			} else if (args[0].equalsIgnoreCase("backup")){
+				if (! (sender instanceof Player)) return true;
+				InventoryUtils.backupInventory((Player) sender);
+			} else if (args[0].equalsIgnoreCase("restore")){
+				if (! (sender instanceof Player)) return true;
+				if (! ((Player) sender).isOp()) return true;
+				InventoryUtils.restoreBackupInventory(Bukkit.getOfflinePlayer(args[1]).getUniqueId(), (Player) sender);
 			} else if (args.length >= 2 && args[0].equalsIgnoreCase("join")){
 				if (! (sender instanceof Player)) return true;
 				Player player = (Player) sender;
