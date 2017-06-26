@@ -18,6 +18,7 @@ public class MeleePlayer {
 	public MeleePlayer(Player player, MeleeColor color){
 		this.uuid = player.getUniqueId();
 		this.color = color;
+		player.getInventory().clear();
 		InventoryUtils.equipPlayer(player, color);
 	}
 	
