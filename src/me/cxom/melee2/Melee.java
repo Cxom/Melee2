@@ -32,6 +32,7 @@ public class Melee extends JavaPlugin {
 	public static Plugin getPlugin(){ return plugin; }
 	
 	private static Map<UUID, MeleePlayer> players = new HashMap<>();
+	private static Map<UUID, String> lobbiers = new HashMap<>();
 	
 	private static Map<String, Lobby> lobbies = new HashMap<>();
 	private static Map<String, GameInstance> games = new HashMap<>();
@@ -66,26 +67,48 @@ public class Melee extends JavaPlugin {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
 		if (label.equalsIgnoreCase("melee")){
-			if (args.length == 0){
-				if (! (sender instanceof Player)) return true;
-				if (PlayerProfile.isSaved((Player) sender)) return true;
-				((Player) sender).openInventory(MeleeMenu.getMenu());
-			} else if (args[0].equalsIgnoreCase("backup")){
-				if (! (sender instanceof Player)) return true;
-				InventoryUtils.backupInventory((Player) sender);
-			} else if (args[0].equalsIgnoreCase("restore")){
-				if (! (sender instanceof Player)) return true;
-				if (! ((Player) sender).isOp()) return true;
-				InventoryUtils.restoreBackupInventory(Bukkit.getOfflinePlayer(args[1]).getUniqueId(), (Player) sender);
-			} else if (args.length >= 2 && args[0].equalsIgnoreCase("join")){
-				if (! (sender instanceof Player)) return true;
-				Player player = (Player) sender;
-				if (! lobbies.containsKey(args[1])){
-					player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + " There is no game/arena named " + args[1] + "!");
-				} else {
-					lobbies.get(args[1]).addPlayer(player);
+			if (! (sender instanceof Player)) return true;
+			Player player = (Player) sender;
+			if (args.length > 0){ //TODO restructure commands around the menu opening by default
+			    switch (args[0]) {
+			    case "leave":
+					MeleePlayer mp = players.get(player.getUniqueId());
+					if (mp == null){
+						String lobby = lobbiers.get(player.getUniqueId());
+						if (lobby == null){
+							player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "You're not in a game!");
+						} else {
+							player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "" + ChatColor.ITALIC 
+									+ "Removing you from " + lobby + " lobby . . .");
+							removeLobbier(player, lobby);
+						}
+					} else {
+						player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "" + ChatColor.ITALIC
+								+ "Removing you from " + mp.getGameName() + " . . .");
+						mp.remove();
+					}
+					return true;
+			    case "join":
+					if (args.length < 2) {
+						player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "/player join <game name> (or just type /melee)");
+					} else if (! lobbies.containsKey(args[1])){
+						player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + " There is no game/arena named " + args[1] + "!");
+					} else {
+						addLobbier(player, args[1]);
+					}
+					return true;
+			    case "backup":
+					InventoryUtils.backupInventory(player);
+					return true;
+			    case "restore":
+					if (! (player).isOp()) return true;
+					InventoryUtils.restoreBackupInventory(Bukkit.getOfflinePlayer(args[1]).getUniqueId(), player);
+					return true;
 				}
+			    //default just won't return --> opens the /melee menu
 			}
+			if (PlayerProfile.isSaved((Player) sender)) return true;
+			((Player) sender).openInventory(MeleeMenu.getMenu());
 		}
 		
 		return true;
@@ -111,6 +134,23 @@ public class Melee extends JavaPlugin {
 		players.remove(uuid);
 	}
 	
+	public static void addLobbier(Player player, String game){
+		Lobby lobby = getLobby(game);
+		if (lobby != null){
+			lobbiers.put(player.getUniqueId(), game);
+			lobby.addPlayer(player);
+		}
+	}
+	
+	public static void removeLobbier(Player player, String game){
+		Lobby lobby = getLobby(game);
+		if (lobby != null){
+			lobbiers.remove(player.getUniqueId());
+			lobby.removePlayer(player);
+		}
+	}
+	
+		
 	public static Lobby getLobby(String name){
 		return lobbies.get(name);
 	}

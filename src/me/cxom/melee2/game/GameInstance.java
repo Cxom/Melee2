@@ -14,7 +14,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -63,7 +62,7 @@ public class GameInstance implements Listener {
 		CirculatingList<MeleeColor> colors = new CirculatingList<>(MeleeColor.getDefaults(), true);
 		bossbar.setMessage(ChatColor.WHITE + "Now playing on " + ChatColor.ITALIC + arena.getName() + ChatColor.RESET + "!");
 		for (Player player : players){
-			MeleePlayer mp = new MeleePlayer(player, colors.next());
+			MeleePlayer mp = new MeleePlayer(player, colors.next(), arena.getName());
 			Melee.addPlayer(mp);
 			this.players.add(player.getUniqueId());
 			spawnPlayer(mp);
@@ -199,19 +198,8 @@ public class GameInstance implements Listener {
 	}
 	
 	@EventHandler
-	public void onPlayerLeaveGame(PlayerCommandPreprocessEvent e){
-		if (e.getMessage().equalsIgnoreCase("/melee leave")){
-			if (!removePlayer(e.getPlayer())){
-				Melee.getLobby(arena.getName()).removePlayer(e.getPlayer());
-			};
-		}
-	}
-	
-	@EventHandler
 	public void onPlayerLeaveServer(PlayerQuitEvent e){
-		if (!removePlayer(e.getPlayer())){
-			Melee.getLobby(arena.getName()).removePlayer(e.getPlayer());
-		};
+		removePlayer(e.getPlayer());
 	}
 	
 }

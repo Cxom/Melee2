@@ -79,10 +79,12 @@ public class Lobby implements Listener{
 		}
 	}
 	
-	public void removePlayer(Player player){
+	public boolean removePlayer(Player player){
 		if (waitingPlayers.remove(player)){
 			PlayerProfile.restore(player);
+			return true;
 		}
+		return false;
 	}
 	
 	public void removeAll(){

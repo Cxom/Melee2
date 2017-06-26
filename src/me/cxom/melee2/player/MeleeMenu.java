@@ -18,7 +18,6 @@ import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.arena.configuration.ArenaManager;
 import me.cxom.melee2.game.GameInstance;
-import me.cxom.melee2.game.Lobby;
 
 public class MeleeMenu implements Listener {
 
@@ -49,11 +48,9 @@ public class MeleeMenu implements Listener {
 			 && e.getCurrentItem().getItemMeta().hasLore()){
 				ItemStack clicked = e.getCurrentItem();
 				if(! ChatColor.stripColor(clicked.getItemMeta().getLore().get(1)).equals("STOPPED")){
-					Lobby lobby = Melee.getLobby(ChatColor.stripColor(clicked.getItemMeta().getDisplayName()));
-					if (lobby != null){
-						lobby.addPlayer((Player) e.getWhoClicked());
-						e.getWhoClicked().closeInventory();
-					}
+					String game = ChatColor.stripColor(clicked.getItemMeta().getDisplayName());
+					Melee.addLobbier((Player) e.getWhoClicked(), game);
+					e.getWhoClicked().closeInventory();
 				}
 			}
 			e.setCancelled(true);
