@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -50,7 +49,7 @@ public class ScrollingScoreboard {
 				score.setScore(score.getScore() - 1);
 			}
 		}
-		final Score scroller = sidebar.getScore(ChatColor.RED + newMessage);
+		final Score scroller = sidebar.getScore(newMessage);
 		scroller.setScore(10);
 		activeMessages.offer(newMessage);
 		new BukkitRunnable(){
@@ -60,11 +59,11 @@ public class ScrollingScoreboard {
 					clearMessage(newMessage);
 				}
 			}
-		}.runTaskLater(Melee.getPlugin(), 120);
+		}.runTaskLater(Melee.getPlugin(), 150);
 	}
 	
 	private void clearMessage(String msg){
-		scoreboard.resetScores(ChatColor.RED + msg);
+		scoreboard.resetScores(msg);
 		for(UUID uuid : players){
 			Bukkit.getPlayer(uuid).setScoreboard(scoreboard);
 		}
