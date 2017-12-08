@@ -1,7 +1,6 @@
-package me.cxom.melee2.player;
+package me.cxom.melee2.gui.menu;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,22 +17,27 @@ import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.arena.configuration.ArenaManager;
 import me.cxom.melee2.game.GameInstance;
+import me.cxom.melee2.game.GameState;
 
 public class MeleeMenu implements Listener {
 
 	private static final String title = "Melee Games";
 	
 	public static Inventory getMenu(){
-		Map<String, GameInstance> games = Melee.getGameMap();
-		Inventory menu = Bukkit.createInventory(null, (games.size() / 9 + 1) * 9, title); 
+		
+		Inventory menu = Bukkit.createInventory(null, (Melee.getGameMap().size() / 9 + 1) * 9, title); 
+		
 		for (MeleeArena arena : ArenaManager.getArenas()){
+		
 			GameInstance game = Melee.getGame(arena.getName());
+			
 			ItemStack gameMarker = game.getGameState().getMenuItem();
 			ItemMeta meta = gameMarker.getItemMeta();
 			meta.setDisplayName(ChatColor.BLUE + arena.getName());
 			meta.setLore(Arrays.asList(game.getGameState().getChatColor() + game.getGameState().name(),
-									   Melee.getLobby(arena.getName()).getWaitingPlayers().size() + " player(s) in lobby."));
+									   game.getLobby().getWaitingPlayers().size() + " player(s) in lobby."));
 			gameMarker.setItemMeta(meta);
+			
 			menu.addItem(gameMarker);
 		}
 		return menu;
@@ -41,19 +45,23 @@ public class MeleeMenu implements Listener {
 	
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent e){
+		
 		if (e.getClickedInventory() == null) return;
+		
 		if (title.equals(e.getClickedInventory().getName())){
+			
+			e.setCancelled(true);
+			
 			if (e.getCurrentItem() != null
 			 && e.getCurrentItem().hasItemMeta()
-			 && e.getCurrentItem().getItemMeta().hasLore()){
-				ItemStack clicked = e.getCurrentItem();
-				if(! ChatColor.stripColor(clicked.getItemMeta().getLore().get(1)).equals("STOPPED")){
-					String game = ChatColor.stripColor(clicked.getItemMeta().getDisplayName());
-					Melee.addLobbier((Player) e.getWhoClicked(), game);
-					e.getWhoClicked().closeInventory();
-				}
+			 && e.getCurrentItem().getItemMeta().hasLore()
+			 && ! GameState.STOPPED.toString().equals(ChatColor.stripColor(e.getCurrentItem().getItemMeta().getLore().get(1)))){ //TODO i18n : replace toString
+					
+				String game = ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName());
+				Melee.getGame(game).addPlayer((Player) e.getWhoClicked());
+				e.getWhoClicked().closeInventory();
+					
 			}
-			e.setCancelled(true);
 		}
 	}
 	
