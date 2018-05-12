@@ -17,6 +17,9 @@ public class PlayerProfile {
 	private static Map<UUID, PlayerProfile> saved = new HashMap<>();
 	
 	public static void save(Player player){
+		if (isSaved(player)) {
+			throw new AssertionError("This player already has an unrecovered profile!");
+		}
 		saved.put(player.getUniqueId(), new PlayerProfile(player));
 	}
 	
@@ -44,6 +47,7 @@ public class PlayerProfile {
 	private final ItemStack[] armor;
 	private final Location location;
 	private final GameMode gamemode;
+	private final boolean canFly;
 	private final boolean flying;
 	private final boolean invulnerable;
 	private final int xpLvl;
@@ -59,6 +63,7 @@ public class PlayerProfile {
 		this.armor = player.getInventory().getArmorContents();
 		this.location = player.getLocation();
 		this.gamemode = player.getGameMode();
+		this.canFly = player.getAllowFlight();
 		this.flying = player.isFlying();
 		this.invulnerable = player.isInvulnerable();
 		this.xpLvl = player.getLevel();
@@ -72,9 +77,13 @@ public class PlayerProfile {
 	
 	private void restore(){
 		Player player = Bukkit.getPlayer(uuid);
+		
+		player.teleport(location); //Teleport must happen first to prevent world settings overriding stored player
+		
 		player.getInventory().setContents(inventory);
 		player.getInventory().setArmorContents(armor);
 		player.setGameMode(gamemode);
+		player.setAllowFlight(canFly);
 		player.setFlying(flying);
 		player.setInvulnerable(invulnerable);
 		player.setLevel(xpLvl);
@@ -83,7 +92,7 @@ public class PlayerProfile {
 		player.setFoodLevel(hunger);
 		player.setSaturation(saturation);
 		player.setExhaustion(exhaustion);
-		player.teleport(location);
+		
 	}
 	
 }

@@ -10,16 +10,16 @@ public class MeleeArena {
 
 	private final String name;
 	private final Location pregameLobby;
-	private final int playersToStart;
+	private final int playersNeededToStart;
 	private final CirculatingList<Location> spawns;
-	private final int killsToEnd;
+	private final int killsToEnd = 1; //TODO make this a member variable of GameInstance as well, set to arena value as default
 	
-	public MeleeArena(String name, Location pregameLobby, int playersToStart, List<Location> spawns, int killsToEnd){
+	public MeleeArena(String name, Location pregameLobby, int playersNeededToStart, List<Location> spawns, int killsToEnd){
 		this.name = name;
 		this.pregameLobby = pregameLobby;
-		this.playersToStart = playersToStart;
+		this.playersNeededToStart = playersNeededToStart;
 		this.spawns = new CirculatingList<Location>(spawns, true);
-		this.killsToEnd = killsToEnd;
+		//this.killsToEnd = killsToEnd;
 	}
 	
 	public String getName(){
@@ -30,8 +30,8 @@ public class MeleeArena {
 		return pregameLobby;
 	}
 	
-	public int getPlayersToStart(){
-		return playersToStart;
+	public int getPlayersNeededToStart(){
+		return playersNeededToStart;
 	}
 
 	public CirculatingList<Location> getSpawns() {

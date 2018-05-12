@@ -23,11 +23,16 @@ import me.cxom.melee2.Melee;
 import me.cxom.melee2.player.PlayerProfile;
 import me.cxom.melee2.util.PlayerUtils;
 
+//This class is effectively a subclass of MeleeInstance, in a separate file for readability
 public class Lobby implements Listener{
 	
+	
+	//static variables
 	private static final ItemStack READY_BLOCK;
 	private static final ItemStack NOT_READY_BLOCK;
+	
 	static {
+		//Initializing the item meta for READY_BLOCK
 		READY_BLOCK = new ItemStack(Material.STAINED_CLAY, 1, (short) 5);
 		ItemMeta im = READY_BLOCK.getItemMeta();
 		im.setDisplayName(ChatColor.GREEN + "" + ChatColor.ITALIC + "READY");
@@ -35,6 +40,7 @@ public class Lobby implements Listener{
 				                                  "no longer ready!"));
 		READY_BLOCK.setItemMeta(im);
 		
+		//Initializing the item meta for NOT_READY_BLOCK
 		NOT_READY_BLOCK = new ItemStack(Material.STAINED_CLAY, 1, (short) 14);
 		im = NOT_READY_BLOCK.getItemMeta();
 		im.setDisplayName(ChatColor.RED + "" + ChatColor.ITALIC + "NOT READY");
@@ -43,55 +49,68 @@ public class Lobby implements Listener{
 		NOT_READY_BLOCK.setItemMeta(im);
 	}
 	
-	private GameInstance game;
-	private int ready = 0;
 	
-	public Lobby(GameInstance game){
-		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
-		this.game = game;
-		this.ready = 0;
-	}
+	//instance variables
+	GameInstance game;
+	private int ready = 0;
 	
 	Set<Player> waitingPlayers = new HashSet<>();
 	
+	Lobby(GameInstance game){
+		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
+		this.game = game;
+	}
+	
 	public void addPlayer(Player player){
+		
 		if (game.getGameState() == GameState.STOPPED){
+			
 			player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "This game has been stopped, you cannot join.");
-			return;
-		}
-		waitingPlayers.add(player);
-		PlayerProfile.save(player);
-		player.teleport(game.getArena().getPregameLobby());
-		player.setInvulnerable(true);
-		player.setGameMode(GameMode.SURVIVAL);
-		player.setFlying(false);
-		player.setLevel(0);
-		player.setExp(0);
-		PlayerUtils.perfectStats(player);
-		player.getInventory().clear();
-		player.getInventory().setItem(8, NOT_READY_BLOCK);
-		if (game.getGameState() == GameState.WAITING && waitingPlayers.size() == game.getArena().getPlayersToStart()){
-			if (ready <= waitingPlayers.size() / 2){
-				for (Player p : waitingPlayers){
-					p.sendMessage(Melee.CHAT_PREFIX + ChatColor.GREEN + "Enough players in the lobby, ready up to start the countdown!");
+
+		} else {
+			
+			waitingPlayers.add(player);
+			
+			player.teleport(game.getArena().getPregameLobby());
+			
+			player.getInventory().clear();
+			player.getInventory().setItem(8, NOT_READY_BLOCK);
+			
+			player.setInvulnerable(true);
+			//Runnable prevents world settings overriding gamemode after teleport
+			new BukkitRunnable() {
+				public void run() {
+					player.setGameMode(GameMode.SURVIVAL);
 				}
+			}.runTaskLater(Melee.getPlugin(), 20);
+			player.setFlying(false);
+			player.setLevel(0);
+			player.setExp(0);
+			PlayerUtils.perfectStats(player);
+			
+			if (game.getGameState() == GameState.WAITING 
+			 && waitingPlayers.size() == game.getArena().getPlayersNeededToStart()
+		     && ready <= waitingPlayers.size() / 2){
+				waitingPlayers.forEach(p -> p.sendMessage(Melee.CHAT_PREFIX + ChatColor.GREEN + "Enough players in the lobby, ready up to start the countdown!"));
 			}
 		}
 	}
 	
 	public boolean removePlayer(Player player){
 		if (waitingPlayers.remove(player)){
+			if (player.getInventory().getItem(8) == NOT_READY_BLOCK) {
+				ready--;
+			}
 			PlayerProfile.restore(player);
 			return true;
+		} else {
+			return false;
 		}
-		return false;
 	}
 	
 	public void removeAll(){
-		for (Player player : waitingPlayers){
-			PlayerProfile.restore(player);
-		}
-		waitingPlayers.clear();
+		waitingPlayers.forEach(PlayerProfile::restore);
+		reset();
 	}
 	
 	public Set<Player> getWaitingPlayers(){
@@ -99,22 +118,17 @@ public class Lobby implements Listener{
 	}
 	
 	public void startCountdown(){
+		
+		game.setGameState(GameState.STARTING);
+		
 		new BukkitRunnable(){
-			int i = 10;
+			
+			int i = 5; //10
+			
 			@Override
 			public void run(){
 				if (i <= 0){
-					this.cancel();
-					if (game.getGameState() != GameState.STARTING 
-							|| waitingPlayers.size() < game.getArena().getPlayersToStart()
-							|| ready <= waitingPlayers.size() / 2d){
-						for (Player player : waitingPlayers){
-							player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "Not enough players in lobby and ready, start aborted!");
-						}
-						game.setGameState(GameState.WAITING);
-					} else {
-						startNow();
-					}
+					attemptStart();
 					return;
 				}
 				for (Player player : waitingPlayers){
@@ -123,38 +137,62 @@ public class Lobby implements Listener{
 				}
 				i--;
 			}
+			
+			private void attemptStart() {
+				this.cancel();
+				
+				if (game.getGameState() != GameState.STARTING 
+				 || waitingPlayers.size() < game.getArena().getPlayersNeededToStart()
+		   		 || ready <= waitingPlayers.size() / 2d){
+					for (Player player : waitingPlayers){
+						player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "Not enough players in lobby and ready, start aborted!");
+					}
+					game.setGameState(GameState.WAITING);
+				} else {
+					startNow();
+				}
+			}
+			
 		}.runTaskTimerAsynchronously(Melee.getPlugin(), 20, 20);
 	}
 	
 	public void startNow(){
 		game.start(waitingPlayers);
+		reset();
+	}
+	
+	private void reset() {
 		waitingPlayers.clear();
 		ready = 0;
 	}
 	
 	@EventHandler
 	public void onToggleReadiness(PlayerInteractEvent e){
+		//TODO Fix being able to move ready block in inventory?
+		if(! waitingPlayers.contains(e.getPlayer())) return;
+		
 		if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			
 			if (READY_BLOCK.equals(e.getItem())){
 				ready = Math.max(0, ready - 1);
-				e.getPlayer().getInventory().clear();
 				e.getPlayer().getInventory().setItem(8, NOT_READY_BLOCK);
 				e.setCancelled(true);
 			} else if (NOT_READY_BLOCK.equals(e.getItem())) {
 				ready = Math.min(waitingPlayers.size(), ready + 1);
-				e.getPlayer().getInventory().clear();
 				e.getPlayer().getInventory().setItem(8, READY_BLOCK);
 				e.setCancelled(true);
-				if (game.getGameState() == GameState.WAITING && waitingPlayers.size() >= game.getArena().getPlayersToStart()){
-					if (ready > (waitingPlayers.size() / 2d)){
-						game.setGameState(GameState.STARTING);
-						startCountdown();
-					}
+				if (game.getGameState() == GameState.WAITING 
+				 && waitingPlayers.size() >= game.getArena().getPlayersNeededToStart()
+				 && ready > (waitingPlayers.size() / 2d)){
+					startCountdown();
 				}
+				 
 			}
+			
 		}
 	}
 	
+	//Cancels dropping the readiness indicator
 	@EventHandler
 	public void onDropReadyBlock(PlayerDropItemEvent e){
 		if (READY_BLOCK.equals(e.getItemDrop().getItemStack()) || NOT_READY_BLOCK.equals(e.getItemDrop().getItemStack())){

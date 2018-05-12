@@ -28,7 +28,7 @@ public class ArenaManager {
 	}
 	
 	public static boolean isArena(String arenaName){
-		return arenas.containsKey(arenas) || loadArenaConfig(arenaName) != null;
+		return arenas.containsKey(arenaName) || loadArenaConfig(arenaName) != null;
 	}
 	
 	public static MeleeArena getArena(String arenaName){
