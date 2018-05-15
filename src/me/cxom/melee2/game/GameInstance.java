@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -22,8 +23,8 @@ import com.trinoxtion.movement.MovementSystem;
 import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.game.combat.AttackMethod;
-import me.cxom.melee2.gui.game.MeleeBossBar;
-import me.cxom.melee2.gui.game.ScrollingScoreboard;
+import me.cxom.melee2.game.gui.MeleeBossBar;
+import me.cxom.melee2.game.gui.ScrollingScoreboard;
 import me.cxom.melee2.player.MeleeColor;
 import me.cxom.melee2.player.MeleePlayer;
 import me.cxom.melee2.player.PlayerProfile;
@@ -31,134 +32,84 @@ import me.cxom.melee2.util.CirculatingList;
 import me.cxom.melee2.util.FireworkUtils;
 import me.cxom.melee2.util.PlayerUtils;
 
+/**
+ * Represents an instance of a Melee game on one arena. 
+ * The game object is persistent across games
+ * 
+ * @author Cxom
+ *
+ */
 public class GameInstance {
 
 	private final MeleeArena arena;
 	private final Lobby lobby;
 	
-	private final MovementSystem movement = MovementPlusPlus.CXOMS_MOVEMENT; //If the old API doesn't like this, change type back to CxomsMovement
+	private final CirculatingList<Location> spawns;
+	
+	private final MovementSystem movement = MovementPlusPlus.CXOMS_MOVEMENT;
 	private final MeleeBossBar bossbar;
 	private final ScrollingScoreboard killfeed = new ScrollingScoreboard(Melee.CHAT_PREFIX);	
 
-	private GameState gamestate = GameState.STOPPED;
+	GameState gamestate = GameState.STOPPED;
 	
 	Map<UUID, MeleePlayer> players = new HashMap<>();
 	
 	private int mostKills = 0;
 	
+	//Ctor
+	/**
+	 * Creates a new MeleeGame on the passed arena
+	 * @param arena
+	 */
 	public GameInstance(MeleeArena arena){
 		this.arena = arena;
 		this.lobby = new Lobby(this);
+		this.spawns = new CirculatingList<Location>(arena.getSpawns(), true);
+		
 		this.bossbar = new MeleeBossBar();
 		
 		new MeleeEventListeners(this);
 		
-		reset();
+		this.gamestate = GameState.WAITING;
 	}
 	
-	//Methods
+	// ----------------------------------- //
+	// -------- PLAYER METHODS -------- //
+	// ----------------------------------- //
+	
+	/**
+	 * Adds a player to the game's lobby
+	 * @param player
+	 */
 	public void addPlayer(Player player) {
 		PlayerProfile.save(player);
 		lobby.addPlayer(player);
 	}
 	
+	/**
+	 * Sends a message to all players in the game
+	 * @param message
+	 */
 	private void broadcast(String message){
-		for (UUID uuid : players.keySet()){
-			Bukkit.getPlayer(uuid).sendMessage(message);
-		}
+		players.values().forEach(mp -> mp.getPlayer().sendMessage(message));
 	}
 	
+	/**
+	 * Resets a player's stats and teleports them to a spawn
+	 * @param mp The player
+	 */
 	private void spawnPlayer(MeleePlayer mp){
 		Player player = mp.getPlayer();
 		
 		PlayerUtils.perfectStats(player);
-		player.teleport(arena.getSpawns().next());
+		player.teleport(spawns.next());
 	}
 	
-	
-	
-	void start(Set<Player> startingPlayers){
-		
-		if (players.size() > 0) {
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "/mail Cxomtdoh a MeleeInstance attempted to start with players still in the set!");
-			throw new AssertionError("There should be no players in MeleeInstance before game start!"
-					+ " Something is not clearing properly.");
-		}
-		
-		CirculatingList<MeleeColor> colors = new CirculatingList<>(MeleeColor.getDefaults(), true);
-		for (Player player : startingPlayers){
-			
-			/* trace message */ System.out.println("Initializing player " + player.getName());
-			
-			MeleePlayer mp = new MeleePlayer(player, colors.next());
-			players.put(player.getUniqueId(), mp);
-			
-			
-			spawnPlayer(mp);
-			movement.addPlayer(player);
-			bossbar.addPlayer(player);
-			killfeed.addPlayer(player);
-			player.setInvulnerable(false);
-			
-			player.sendMessage(mp.getColor().getChatColor() + "" + ChatColor.BOLD + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-			player.sendMessage(mp.getColor().getChatColor() + "You are " + mp.getColor().getChatColor().name().replace('_', ' ') + "!");
-			player.sendMessage(mp.getColor().getChatColor() + "" + ChatColor.BOLD + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-		}
-		
-		gamestate = GameState.RUNNING;
-		
-	}
-	
-	private void postgame(MeleePlayer winner) {
-		
-		this.gamestate = GameState.ENDING; 
-		
-		String winMessage = winner.getColor().getChatColor() + winner.getPlayer().getName() + ChatColor.WHITE + " has won the game!";
-		bossbar.setMessage(winMessage);
-		for (UUID uuid : players.keySet()){
-			Player player = Bukkit.getPlayer(uuid);
-			player.sendMessage(Melee.CHAT_PREFIX + winMessage);
-		}
-		
-		Color winnersColor = winner.getColor().getBukkitColor();
-		new BukkitRunnable(){
-			int i = 10; //10 seconds
-			Random r = new Random();
-			@Override
-			public void run(){
-				if (i <= 0){
-					this.cancel();
-					reset();
-					return;
-				}
-				FireworkUtils.spawnFirework(arena.getSpawns().next(), winnersColor, r.nextInt(2) + 2);
-				i--;
-			}
-		}.runTaskTimer(Melee.getPlugin(), 10, 20);
-	}
-	
-	private void reset(){
-		
-		for (UUID uuid : players.keySet()){
-			Bukkit.broadcastMessage("removing/restoring " + Bukkit.getPlayer(uuid).getName());
-//			killfeed.removePlayer(Bukkit.getPlayer(uuid)); Is this not redundant?
-			movement.removePlayer(uuid);
-			
-			PlayerProfile.restore(uuid);
-		}
-		
-		//lobby.removeAll(); What was this doing here?????
-		killfeed.removeAll();
-		bossbar.removeAll();
-		bossbar.setMessage(ChatColor.RESET + "Now playing on " + ChatColor.ITALIC + arena.getName() + ChatColor.RESET + "!");
-		
-		players.clear();
-		
-		mostKills = 0;
-		
-		gamestate = GameState.WAITING;
-	}
-	
+	/**
+	 * Removes a player from the game or the game's lobby
+	 * @param player
+	 * @return True if the player was removed from the game or lobby
+	 */
 	public boolean removePlayer(Player player){
 		if (players.containsKey(player.getUniqueId())){
 			
@@ -167,7 +118,9 @@ public class GameInstance {
 			//caching? TODO If you leave and rejoin while the match is still in progress, it saves your stats
 			killfeed.removePlayer(player);
 			bossbar.removePlayer(player);
+			
 			movement.removePlayer(player);
+			
 			players.remove(player.getUniqueId());
 			
 			PlayerProfile.restore(player); //This restores location
@@ -186,15 +139,98 @@ public class GameInstance {
 		}
 	}
 	
-	public void forceStop(){
+	// ----------------------------------- //
+	// -------- GAMESTATE METHODS -------- //
+	// ----------------------------------- //
+	
+	/**
+	 * Starts a new game with a set of starting players.
+	 * @param startingPlayers
+	 */
+	void start(Set<Player> startingPlayers){
+		
+		if (players.size() > 0) {
+			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "/mail Cxomtdoh a MeleeInstance attempted to start with players still in the set!");
+			throw new AssertionError("There should be no players in MeleeInstance before game start!"
+					+ " Something is not clearing properly.");
+		}
+		
+		CirculatingList<MeleeColor> colors = new CirculatingList<>(MeleeColor.getDefaults(), true);
+		for (Player player : startingPlayers){
+			
+			MeleePlayer mp = new MeleePlayer(player, colors.next());
+			players.put(player.getUniqueId(), mp);
+			
+			//Spawn player first to prevent conflicts with world settings
+			spawnPlayer(mp);
+			
+			movement.addPlayer(player);
+			bossbar.addPlayer(player);
+			killfeed.addPlayer(player);
+			
+			player.setInvulnerable(false);
+			
+			player.sendMessage(mp.getColor().getChatColor() + "" + ChatColor.BOLD + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+			player.sendMessage(mp.getColor().getChatColor() + "You are " + mp.getColor().getChatColor().name().replace('_', ' ') + "!");
+			player.sendMessage(mp.getColor().getChatColor() + "" + ChatColor.BOLD + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+		}
+		
+		gamestate = GameState.RUNNING;
+		
+	}
+	
+	private void runPostgame(MeleePlayer winner) {
+		
+		this.gamestate = GameState.ENDING; 
+		
+		String winMessage = winner.getColor().getChatColor() + winner.getPlayer().getName() + ChatColor.WHITE + " has won the game!";
+		bossbar.setMessage(winMessage);
+		broadcast(Melee.CHAT_PREFIX + winMessage);
+		
+		Color winnersColor = winner.getColor().getBukkitColor();
+		new BukkitRunnable(){
+			int i = 10; //10 seconds
+			Random r = new Random();
+			@Override
+			public void run(){
+				if (i <= 0){
+					this.cancel();
+					reset();
+					return;
+				}
+				FireworkUtils.spawnFirework(spawns.next(), winnersColor, r.nextInt(2) + 1);
+				i--;
+			}
+		}.runTaskTimer(Melee.getPlugin(), 10, 20);
+	}
+	
+	private void reset(){
+		
+		//lobby.removeAll(); What was this doing here?????
+		killfeed.removeAll();
+		bossbar.removeAll();
+		//movement.removeAll(); See below line (maybe change API)
+		players.keySet().forEach(movement::removePlayer);
+		
+		players.keySet().forEach(PlayerProfile::restore);
+		
+		bossbar.setMessage(ChatColor.RESET + "Now playing on " + ChatColor.ITALIC + arena.getName() + ChatColor.RESET + "!");
+		
+		players.clear();
+		
+		mostKills = 0;
+		
+		gamestate = GameState.WAITING;
+	}
+	
+	public void stop(){
 		broadcast(Melee.CHAT_PREFIX + ChatColor.RED + "The game has been interrupted. Stopping . . .");
-		reset(); //TODO Maybe split reset and removeAll up
+		reset();
 		lobby.removeAll();
 		gamestate = GameState.STOPPED;
 	}
 	
 	// Melee Kills and Deaths
-	
 	void onMeleeKill(MeleePlayer killer, MeleePlayer killed, EntityDamageByEntityEvent e){
 			
 		//if suicide, not a kill
@@ -237,7 +273,7 @@ public class GameInstance {
 		
 		
 		if (killer.getKills() == arena.getKillsToEnd()){
-			postgame(killer);
+			runPostgame(killer);
 		}
 		
 	}
@@ -249,13 +285,6 @@ public class GameInstance {
 			((Player) e.getEntity()).setHealth(1);
 		}
 	}
-	
-	//----Setters----//
-	
-	//allows lobby to set GameState.STARING
-	void setGameState(GameState gamestate){
-		this.gamestate = gamestate; 
-	} 
 	
 	//----Getters----//
 	

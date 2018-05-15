@@ -1,4 +1,4 @@
-package me.cxom.melee2.gui.game;
+package me.cxom.melee2.game.gui;
 
 import java.util.HashSet;
 import java.util.Iterator;

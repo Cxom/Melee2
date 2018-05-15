@@ -23,14 +23,11 @@ import me.cxom.melee2.Melee;
 import me.cxom.melee2.player.PlayerProfile;
 import me.cxom.melee2.util.PlayerUtils;
 
-//This class is effectively a subclass of MeleeInstance, in a separate file for readability
-public class Lobby implements Listener{
-	
+public class Lobby implements Listener {
 	
 	//static variables
 	private static final ItemStack READY_BLOCK;
 	private static final ItemStack NOT_READY_BLOCK;
-	
 	static {
 		//Initializing the item meta for READY_BLOCK
 		READY_BLOCK = new ItemStack(Material.STAINED_CLAY, 1, (short) 5);
@@ -53,14 +50,19 @@ public class Lobby implements Listener{
 	//instance variables
 	GameInstance game;
 	private int ready = 0;
-	
 	Set<Player> waitingPlayers = new HashSet<>();
 	
+	//Ctor
 	Lobby(GameInstance game){
 		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
 		this.game = game;
 	}
 	
+	/**
+	 * Adds a player to the lobby if possible
+	 * 
+	 * @param player The player to be added
+	 */
 	public void addPlayer(Player player){
 		
 		if (game.getGameState() == GameState.STOPPED){
@@ -96,6 +98,13 @@ public class Lobby implements Listener{
 		}
 	}
 	
+	/**
+	 * Removes a player from the lobby
+	 * 
+	 * @param player The player to be removed
+	 * 
+	 * @return True if the player was in the lobby
+	 */
 	public boolean removePlayer(Player player){
 		if (waitingPlayers.remove(player)){
 			if (player.getInventory().getItem(8) == NOT_READY_BLOCK) {
@@ -108,6 +117,9 @@ public class Lobby implements Listener{
 		}
 	}
 	
+	/**
+	 * Removes all players from the Lobby
+	 */
 	public void removeAll(){
 		waitingPlayers.forEach(PlayerProfile::restore);
 		reset();
@@ -119,7 +131,7 @@ public class Lobby implements Listener{
 	
 	public void startCountdown(){
 		
-		game.setGameState(GameState.STARTING);
+		game.gamestate = GameState.STARTING;
 		
 		new BukkitRunnable(){
 			
@@ -147,7 +159,7 @@ public class Lobby implements Listener{
 					for (Player player : waitingPlayers){
 						player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "Not enough players in lobby and ready, start aborted!");
 					}
-					game.setGameState(GameState.WAITING);
+					game.gamestate = GameState.WAITING;
 				} else {
 					startNow();
 				}

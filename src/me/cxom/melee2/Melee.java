@@ -45,7 +45,7 @@ public class Melee extends JavaPlugin {
 
 	@Override
 	public void onDisable(){
-		games.values().forEach(game -> game.forceStop());
+		games.values().forEach(game -> game.stop());
 	}
 	
 	
@@ -115,17 +115,13 @@ public class Melee extends JavaPlugin {
 			return true;
 		}
 		
-		((Player) sender).openInventory(MeleeMenu.getMenu());
+		((Player) sender).openInventory(MeleeMenu.getMenu(games.values()));
 		
 		return true;
 	}
 	
 	public static GameInstance getGame(String name){
 		return games.get(name);
-	}
-	
-	public static Map<String, GameInstance> getGameMap(){
-		return games;
 	}
 	
 }

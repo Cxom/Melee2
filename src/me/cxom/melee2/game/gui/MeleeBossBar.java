@@ -1,4 +1,4 @@
-package me.cxom.melee2.gui.game;
+package me.cxom.melee2.game.gui;
 
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
