@@ -81,7 +81,7 @@ public class ScrollingScoreboard {
 	
 	public void removeAll(){
 		for (UUID uuid : players){
-			removePlayer(Bukkit.getPlayer(uuid));
+			Bukkit.getPlayer(uuid).setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 		}
 		players.clear();
 	}

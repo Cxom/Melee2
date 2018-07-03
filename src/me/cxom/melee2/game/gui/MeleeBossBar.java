@@ -21,6 +21,10 @@ public class MeleeBossBar {
 		bossbar.setTitle(title);
 	}
 	
+	public void setColor(BarColor color) {
+		bossbar.setColor(color);
+	}
+	
 	public void setMessage(String title){
 		bossbar.setTitle(title);
 	}
@@ -57,6 +61,12 @@ public class MeleeBossBar {
 				i--;
 			}
 		}.runTaskTimer(Melee.getPlugin(), 0, 6);
+	}
+	
+	public void reset() {
+		bossbar.setTitle("");
+		bossbar.setColor(BarColor.WHITE);
+		bossbar.setStyle(BarStyle.SOLID);
 	}
 	
 	public void addPlayer(Player player){

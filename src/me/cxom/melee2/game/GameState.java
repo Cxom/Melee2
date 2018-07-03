@@ -8,6 +8,7 @@ public enum GameState {
 
 	STARTING(ChatColor.YELLOW, new ItemStack(Material.CONCRETE, 1 , (short) 4)),
 	RUNNING(ChatColor.LIGHT_PURPLE, new ItemStack(Material.CONCRETE, 1 , (short) 6)),
+	ENDING(ChatColor.GOLD, new ItemStack(Material.CONCRETE, 1 , (short) 1)),
 	WAITING(ChatColor.GREEN, new ItemStack(Material.CONCRETE, 1 , (short) 5)),
 	STOPPED(ChatColor.RED, new ItemStack(Material.CONCRETE, 1 , (short) 14));
 	

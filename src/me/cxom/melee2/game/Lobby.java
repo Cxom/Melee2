@@ -1,101 +1,150 @@
 package me.cxom.melee2.game;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.cxom.melee2.Melee;
-import me.cxom.melee2.player.PlayerProfile;
-import me.cxom.melee2.util.PlayerUtils;
 
 public class Lobby implements Listener {
 	
+//	public enum LobbyState {
+//		WAITING(ChatColor.GREEN, new ItemStack(Material.CONCRETE, 1 , (short) 5)),
+//		STARTING(ChatColor.YELLOW, new ItemStack(Material.CONCRETE, 1 , (short) 4)),
+//		UNAVAILABLE(ChatColor.RED, new ItemStack(Material.CONCRETE, 1 , (short) 14));
+//		
+//		private final ChatColor chatColor;
+//		private final ItemStack menuItem;
+//		
+//		private LobbyState(ChatColor chatColor, ItemStack menuItem){
+//			this.chatColor = chatColor;
+//			this.menuItem = menuItem;
+//		}
+//		
+//		public ChatColor getChatColor(){
+//			return chatColor;
+//		}
+//		
+//		public ItemStack getMenuItem(){
+//			return menuItem.clone();
+//		}
+//	}
+	
+	
+	
 	//static variables
-	private static final ItemStack READY_BLOCK;
-	private static final ItemStack NOT_READY_BLOCK;
-	static {
-		//Initializing the item meta for READY_BLOCK
-		READY_BLOCK = new ItemStack(Material.STAINED_CLAY, 1, (short) 5);
-		ItemMeta im = READY_BLOCK.getItemMeta();
-		im.setDisplayName(ChatColor.GREEN + "" + ChatColor.ITALIC + "READY");
-		im.setLore(Arrays.asList(ChatColor.GRAY + "Right click if you're",
-				                                  "no longer ready!"));
-		READY_BLOCK.setItemMeta(im);
-		
-		//Initializing the item meta for NOT_READY_BLOCK
-		NOT_READY_BLOCK = new ItemStack(Material.STAINED_CLAY, 1, (short) 14);
-		im = NOT_READY_BLOCK.getItemMeta();
-		im.setDisplayName(ChatColor.RED + "" + ChatColor.ITALIC + "NOT READY");
-		im.setLore(Arrays.asList(ChatColor.GRAY + "Right click when you're",
-                                                  "ready to play!"));
-		NOT_READY_BLOCK.setItemMeta(im);
-	}
+
 	
 	
 	//instance variables
-	GameInstance game;
-	private int ready = 0;
-	Set<Player> waitingPlayers = new HashSet<>();
+	private final String lobbyName;
+	private MeleeGame game;
+	private final Location lobbySpawn;
+	private final int playersNeededToStart;
+
 	
-	//Ctor
-	Lobby(GameInstance game){
-		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
-		this.game = game;
+	private Map<Player, Boolean> waitingPlayers = new HashMap<>();
+	private int playersReady = 0;
+	
+//	private LobbyState lobbyState = LobbyState.UNAVAILABLE;
+	
+	
+	//Ctors
+	public Lobby(MeleeGame game) {
+		this(game.getArena().getName(),
+			 game,
+			 game.getArena().getPregameLobby(),
+			 game.getArena().getPlayersNeededToStart());
 	}
+	
+	public Lobby(String lobbyName, MeleeGame game, Location lobbySpawn, int playersToStart){
+		this.lobbyName = lobbyName;
+		this.game = game;
+		this.lobbySpawn = lobbySpawn;
+		this.playersNeededToStart = playersToStart;
+		
+		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
+	}
+	
+	// ---------- GETTERS ----------- //
+	public MeleeGame getGame() {
+		return game;
+	}
+	
+	Location getSpawn() {
+		return lobbySpawn;
+	}
+	
+//	public LobbyState getLobbyState() {
+//		return lobbyState;
+//	}
+	
+	public String getName() {
+		return lobbyName;
+	}
+	
+	public int getPlayersNeededToStart() {
+		return playersNeededToStart;
+	}
+	
+	public int getPlayersReady() {
+		return playersReady;
+	}
+	
+	public int getPlayersWaiting() {
+		return waitingPlayers.size();
+	}
+	
+	public Set<Player> getPlayers(){
+		return waitingPlayers.keySet();
+	}
+	
+	public boolean hasPlayer(Player player) {
+		return waitingPlayers.containsKey(player);
+	}
+	
+	public boolean hasReadyPlayer(Player player) {
+		if ( ! hasPlayer(player)) return false;
+		return waitingPlayers.get(player);
+	}
+	
+//	public boolean isAvailable() {
+//		return lobbyState != LobbyState.UNAVAILABLE;
+//	}
+	// --------end-getters----------- //
+	
+	
 	
 	/**
 	 * Adds a player to the lobby if possible
 	 * 
 	 * @param player The player to be added
 	 */
-	public void addPlayer(Player player){
+	void addPlayer(Player player){
 		
-		if (game.getGameState() == GameState.STOPPED){
-			
-			player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "This game has been stopped, you cannot join.");
-
-		} else {
-			
-			waitingPlayers.add(player);
-			
-			player.teleport(game.getArena().getPregameLobby());
-			
-			player.getInventory().clear();
-			player.getInventory().setItem(8, NOT_READY_BLOCK);
-			
-			player.setInvulnerable(true);
-			//Runnable prevents world settings overriding gamemode after teleport
-			new BukkitRunnable() {
-				public void run() {
-					player.setGameMode(GameMode.SURVIVAL);
-				}
-			}.runTaskLater(Melee.getPlugin(), 20);
-			player.setFlying(false);
-			player.setLevel(0);
-			player.setExp(0);
-			PlayerUtils.perfectStats(player);
-			
-			if (game.getGameState() == GameState.WAITING 
-			 && waitingPlayers.size() == game.getArena().getPlayersNeededToStart()
-		     && ready <= waitingPlayers.size() / 2){
-				waitingPlayers.forEach(p -> p.sendMessage(Melee.CHAT_PREFIX + ChatColor.GREEN + "Enough players in the lobby, ready up to start the countdown!"));
+		//Add to a list, teleport to lobby, and (re)set inventory
+		waitingPlayers.put(player, false);
+		
+	}
+	
+	boolean setPlayerReadiness(Player player, boolean ready){
+		
+		if (! hasPlayer(player)) throw new IllegalArgumentException("Can't set the readiness of a player not in the lobby!");
+		
+		if (waitingPlayers.get(player) != ready) {
+			if (ready) {
+				incrementPlayersReady();
+			} else {
+				decrementPlayersReady();
 			}
 		}
+		
+		return waitingPlayers.put(player, ready);
 	}
 	
 	/**
@@ -105,111 +154,28 @@ public class Lobby implements Listener {
 	 * 
 	 * @return True if the player was in the lobby
 	 */
-	public boolean removePlayer(Player player){
-		if (waitingPlayers.remove(player)){
-			if (player.getInventory().getItem(8) == NOT_READY_BLOCK) {
-				ready--;
-			}
-			PlayerProfile.restore(player);
-			return true;
-		} else {
-			return false;
+	void removePlayer(Player player){
+		if (hasReadyPlayer(player)) {
+			playersReady--;
 		}
+		waitingPlayers.remove(player);
 	}
 	
 	/**
 	 * Removes all players from the Lobby
 	 */
-	public void removeAll(){
-		waitingPlayers.forEach(PlayerProfile::restore);
-		reset();
-	}
-	
-	public Set<Player> getWaitingPlayers(){
-		return waitingPlayers;
-	}
-	
-	public void startCountdown(){
-		
-		game.gamestate = GameState.STARTING;
-		
-		new BukkitRunnable(){
-			
-			int i = 5; //10
-			
-			@Override
-			public void run(){
-				if (i <= 0){
-					attemptStart();
-					return;
-				}
-				for (Player player : waitingPlayers){
-					player.sendMessage(Melee.CHAT_PREFIX + ChatColor.GOLD + "Match starting in " + i + " second(s) on " + game.getArena().getName() + "!");
-					player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, .25f, .9f);
-				}
-				i--;
-			}
-			
-			private void attemptStart() {
-				this.cancel();
-				
-				if (game.getGameState() != GameState.STARTING 
-				 || waitingPlayers.size() < game.getArena().getPlayersNeededToStart()
-		   		 || ready <= waitingPlayers.size() / 2d){
-					for (Player player : waitingPlayers){
-						player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "Not enough players in lobby and ready, start aborted!");
-					}
-					game.gamestate = GameState.WAITING;
-				} else {
-					startNow();
-				}
-			}
-			
-		}.runTaskTimerAsynchronously(Melee.getPlugin(), 20, 20);
-	}
-	
-	public void startNow(){
-		game.start(waitingPlayers);
-		reset();
-	}
-	
-	private void reset() {
+	//TODO Rename this to removeAll sometime when Eclipse isn't a piece of shit.
+	void clear() {
 		waitingPlayers.clear();
-		ready = 0;
+		playersReady = 0;
+	}
+
+	private void incrementPlayersReady() {
+		playersReady = Math.min(getPlayersWaiting(), playersReady + 1);
 	}
 	
-	@EventHandler
-	public void onToggleReadiness(PlayerInteractEvent e){
-		//TODO Fix being able to move ready block in inventory?
-		if(! waitingPlayers.contains(e.getPlayer())) return;
-		
-		if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			
-			if (READY_BLOCK.equals(e.getItem())){
-				ready = Math.max(0, ready - 1);
-				e.getPlayer().getInventory().setItem(8, NOT_READY_BLOCK);
-				e.setCancelled(true);
-			} else if (NOT_READY_BLOCK.equals(e.getItem())) {
-				ready = Math.min(waitingPlayers.size(), ready + 1);
-				e.getPlayer().getInventory().setItem(8, READY_BLOCK);
-				e.setCancelled(true);
-				if (game.getGameState() == GameState.WAITING 
-				 && waitingPlayers.size() >= game.getArena().getPlayersNeededToStart()
-				 && ready > (waitingPlayers.size() / 2d)){
-					startCountdown();
-				}
-				 
-			}
-			
-		}
-	}
-	
-	//Cancels dropping the readiness indicator
-	@EventHandler
-	public void onDropReadyBlock(PlayerDropItemEvent e){
-		if (READY_BLOCK.equals(e.getItemDrop().getItemStack()) || NOT_READY_BLOCK.equals(e.getItemDrop().getItemStack())){
-			e.setCancelled(true);
-		}
+	private void decrementPlayersReady() {
+		playersReady = Math.max(0, playersReady - 1);
 	}
 	
 }

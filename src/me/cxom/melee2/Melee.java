@@ -1,8 +1,5 @@
 package me.cxom.melee2;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -12,19 +9,23 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.cxom.melee2.arena.configuration.ArenaManager;
-import me.cxom.melee2.game.GameInstance;
+import me.cxom.melee2.game.MeleeGameManager;
 import me.cxom.melee2.gui.menu.MeleeMenu;
 import me.cxom.melee2.player.PlayerProfile;
 import me.cxom.melee2.util.InventoryUtils;
 
 public class Melee extends JavaPlugin {
 
+	// Responsibility: Hold globals, handle plugin starting and stopping, route commands
+	
 	public static final String CHAT_PREFIX = ChatColor.DARK_GREEN + "[" + ChatColor.WHITE + "Melee" + ChatColor.DARK_GREEN + "]" + ChatColor.RESET + " ";
 	
 	private static Plugin plugin;
 	public static Plugin getPlugin(){ return plugin; }
 	
-	private static Map<String, GameInstance> games = new HashMap<>();
+	
+
+
 	
 	
 	@Override
@@ -32,22 +33,20 @@ public class Melee extends JavaPlugin {
 		
 		plugin = this;
 		
-		//Bukkit.getServer().getPluginManager().registerEvents(new MeleeEventCaller(), getPlugin());
-		//Bukkit.getServer().getPluginManager().registerEvents(new CancelledEvents(), getPlugin());
-		//Bukkit.getServer().getPluginManager().registerEvents(new CommandEvents(), getPlugin());
+		// Register Events
 		Bukkit.getServer().getPluginManager().registerEvents(new MeleeMenu(), getPlugin());
 		
+		// Load arenas and create a game for each
 		ArenaManager.loadArenas();
-		ArenaManager.getArenas().forEach((arena) -> games.put(arena.getName(), new GameInstance(arena)));
+		MeleeGameManager.createGames();
 		
 	}
 	
 
 	@Override
 	public void onDisable(){
-		games.values().forEach(game -> game.stop());
+		MeleeGameManager.stopAllGames();
 	}
-	
 	
 	@SuppressWarnings("deprecation")
 	@Override
@@ -61,29 +60,20 @@ public class Melee extends JavaPlugin {
 		if (args.length > 0){
 		    switch (args[0]) {
 		    case "leave":
-				//This is preprocessed in MeleeInstance, and cancelled if it goes through.
-		    	//Good chance that it will be changed to just be completely br
+				/*
+				 * This is preprocessed in MeleeInstance in order to determine the game,
+				 * and cancelled if it goes through.
+				 */
 		    	player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "You're not in a game!");
-//						} else {
-//							player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "" + ChatColor.ITALIC 
-//									+ "Removing you from " + lobby + " lobby . . .");
-//							if (getLobby(lobby) != null) {
-//								getLobby(lobby).removePlayer(player);
-//							}
-//							deregisterLobbier(player);
-						
-//						}
-//						player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "" + ChatColor.ITALIC
-//								+ "Removing you from " + mp.getGameName() + " . . ."); Move to remove methods
 				
 				return true;
 		    case "join":
 				if (args.length < 2) {
 					player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "/melee join <arena> (or just type /melee)");
-				} else if (! games.containsKey(args[1])){
+				} else if (! MeleeGameManager.hasGame(args[1])){
 					player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + " There is no game/arena named " + args[1] + "!");
 				} else {
-					getGame(args[1]).addPlayer(player);
+					MeleeGameManager.addPlayerToGameLobby(args[1], player);
 				}
 				return true;
 				
@@ -98,9 +88,9 @@ public class Melee extends JavaPlugin {
 				return true;
 		    case "debug":
 		    	if (args.length <= 1) {
-		    		player.sendMessage("Games: " + games);
+		    		MeleeGameManager.debugGamesList(player);
 		    	} else {
-		    		getGame(args[1]).debug(player);
+		    		MeleeGameManager.debugGame(args[1], player);
 		    	} 
 		    	return true;
 		    
@@ -115,13 +105,13 @@ public class Melee extends JavaPlugin {
 			return true;
 		}
 		
-		((Player) sender).openInventory(MeleeMenu.getMenu(games.values()));
+		((Player) sender).openInventory(MeleeGameManager.getMenu());
 		
 		return true;
 	}
 	
-	public static GameInstance getGame(String name){
-		return games.get(name);
-	}
+//	public static MeleeGame getGame(String name){
+//		return games.get(name);
+//	}
 	
 }

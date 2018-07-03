@@ -14,25 +14,27 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import me.cxom.melee2.Melee;
-import me.cxom.melee2.game.GameInstance;
 import me.cxom.melee2.game.GameState;
+import me.cxom.melee2.game.Lobby;
+import me.cxom.melee2.game.MeleeGame;
+import me.cxom.melee2.game.MeleeGameManager;
 
 public class MeleeMenu implements Listener {
 
 	private static final String title = "Melee Games";
 	
-	public static Inventory getMenu(Collection<GameInstance> games){
+	public static Inventory createMenu(Collection<Lobby> lobbies){
 		
-		Inventory menu = Bukkit.createInventory(null, (games.size() / 9 + 1) * 9, title); 
+		Inventory menu = Bukkit.createInventory(null, (lobbies.size() / 9 + 1) * 9, title); 
 		
-		for (GameInstance game : games){
+		for (Lobby lobby : lobbies){
+			MeleeGame game = lobby.getGame();
 			
 			ItemStack gameMarker = game.getGameState().getMenuItem();
 			ItemMeta meta = gameMarker.getItemMeta();
 			meta.setDisplayName(ChatColor.BLUE + game.getArena().getName());
 			meta.setLore(Arrays.asList(game.getGameState().getChatColor() + game.getGameState().name(),
-									   game.getLobby().getWaitingPlayers().size() + " player(s) in lobby."));
+									   lobby.getPlayersWaiting() + " player(s) in lobby."));
 			gameMarker.setItemMeta(meta);
 			
 			menu.addItem(gameMarker);
@@ -60,7 +62,7 @@ public class MeleeMenu implements Listener {
 				
 				//Get game name and add player
 				String game = ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName());
-				Melee.getGame(game).addPlayer((Player) e.getWhoClicked());
+				MeleeGameManager.addPlayerToGameLobby(game, (Player) e.getWhoClicked());
 				
 				//Close inventory
 				e.getWhoClicked().closeInventory();
