@@ -16,7 +16,14 @@ import me.cxom.melee2.arena.MeleeArena;
 
 public class ArenaLoader {
 	
-	public static MeleeArena load(FileConfiguration arenacfg){
+	//TODO research - protected singleton make sense?
+	private static ArenaLoader instance = new ArenaLoader();
+	private ArenaLoader() {}
+	public static ArenaLoader getInstance() {
+		return instance;
+	}
+	
+	public MeleeArena load(FileConfiguration arenacfg){
 		String name = arenacfg.getString("name");
 		
 		World world = getRootWorld(arenacfg);
@@ -46,20 +53,20 @@ public class ArenaLoader {
 	
 	/*Static loading parsers*/
 	
-	public static World getWorld(ConfigurationSection section){
+	public World getWorld(ConfigurationSection section){
 		return Bukkit.getWorld(section.getString("world"));
 	}
 	
-	public static World getRootWorld(ConfigurationSection section){
+	public World getRootWorld(ConfigurationSection section){
 		return getWorld(section.getRoot());
 	}
 	
-	public static String getName(File arenaFile){
+	public String getName(File arenaFile){
 		String name = arenaFile.getName();
         return name.substring(0, name.length() - 4);
 	}
 	
-	public static <T> List<T> getList(ConfigurationSection section, Function<ConfigurationSection, T> loader) throws ClassCastException{
+	public <T> List<T> getList(ConfigurationSection section, Function<ConfigurationSection, T> loader) throws ClassCastException{
 		List<T> list = new ArrayList<>();
 		for(String key : section.getKeys(false)){
 			try {
@@ -71,15 +78,15 @@ public class ArenaLoader {
 		return list;
 	}
 	
-	public static Location getLocation(ConfigurationSection spawnInfo){
+	public Location getLocation(ConfigurationSection spawnInfo){
 		return getLocation(spawnInfo, getRootWorld(spawnInfo));
 	}
 	
-	public static Location getLocationWithWorld(ConfigurationSection section){
+	public Location getLocationWithWorld(ConfigurationSection section){
 		return getLocation(section, getWorld(section));
 	}
 	
-	public static Location getLocation(ConfigurationSection spawnInfo, World world){
+	public Location getLocation(ConfigurationSection spawnInfo, World world){
 		return new Location(
 			world,
 			spawnInfo.getDouble("x"),

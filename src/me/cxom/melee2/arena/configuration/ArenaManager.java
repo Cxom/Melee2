@@ -17,12 +17,24 @@ import me.cxom.melee2.arena.MeleeArena;
 
 public class ArenaManager {
 	
+	/**
+	 * The folder containing the Arena YAML files
+	 */
 	private static File arenaFolder;
 	
+	/**
+	 * A map of the Arena names -> their YAML Configurations
+	 */
 	private static Map<String, FileConfiguration> arenaConfigs = new HashMap<>();
 	
+	/**
+	 * A map of the Arena names -> their loaded Objects
+	 */
 	private static Map<String, MeleeArena> arenas = new HashMap<>();
 	
+	
+	
+	// ---------- GETTERS ----------
 	public static Collection<MeleeArena> getArenas(){
 		return arenas.values();
 	}
@@ -40,13 +52,16 @@ public class ArenaManager {
 		if (!isArena(arenaName)) return null;
 		return arenaConfigs.get(arenaName);
 	}
+	// --------------------------------
+	
+	
 	
 	public static void modifyArena(String arenaName, String path, Object value){
 		if(!isArena(arenaName)) return;
 		FileConfiguration arena = getArenaConfig(arenaName);
 		arena.set(path, value);
 		arenaConfigs.put(arenaName, arena);
-		MeleeArena loaded = ArenaLoader.load(arena);
+		MeleeArena loaded = ArenaLoader.getInstance().load(arena);
 		if (loaded != null){
 			arenas.put(arenaName, loaded);
 		}
@@ -68,7 +83,7 @@ public class ArenaManager {
 				try {
 					arena.load(arenaf);
 					arenaConfigs.put(arenaf.getName(), arena);
-					MeleeArena loaded = ArenaLoader.load(arena);
+					MeleeArena loaded = ArenaLoader.getInstance().load(arena);
 					if (loaded != null){
 						arenas.put(arenaf.getName(), loaded);
 					}
@@ -89,7 +104,7 @@ public class ArenaManager {
 			try {
 				arena.load(arenaf);
 				arenaConfigs.put(arenaName, arena);
-				MeleeArena loaded = ArenaLoader.load(arena);
+				MeleeArena loaded = ArenaLoader.getInstance().load(arena);
 				if (loaded != null){
 					arenas.put(arenaf.getName(), loaded);
 				}
