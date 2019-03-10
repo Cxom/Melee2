@@ -1,4 +1,4 @@
-package me.cxom.melee2.game;
+package me.cxom.melee2.common.model;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -6,11 +6,11 @@ import org.bukkit.inventory.ItemStack;
 
 public enum GameState {
 
-	STARTING(ChatColor.YELLOW, new ItemStack(Material.CONCRETE, 1 , (short) 4)),
-	RUNNING(ChatColor.LIGHT_PURPLE, new ItemStack(Material.CONCRETE, 1 , (short) 6)),
-	ENDING(ChatColor.GOLD, new ItemStack(Material.CONCRETE, 1 , (short) 1)),
-	WAITING(ChatColor.GREEN, new ItemStack(Material.CONCRETE, 1 , (short) 5)),
-	STOPPED(ChatColor.RED, new ItemStack(Material.CONCRETE, 1 , (short) 14));
+//	STARTING(ChatColor.YELLOW, new ItemStack(Material.YELLOW_CONCRETE)),
+	RUNNING(ChatColor.LIGHT_PURPLE, new ItemStack(Material.PINK_CONCRETE)),
+	ENDING(ChatColor.GOLD, new ItemStack(Material.ORANGE_CONCRETE)),
+	WAITING(ChatColor.GREEN, new ItemStack(Material.LIME_CONCRETE)),
+	STOPPED(ChatColor.RED, new ItemStack(Material.RED_CONCRETE));
 	
 	private final ChatColor chatColor;
 	private final ItemStack menuItem;

@@ -1,4 +1,4 @@
-package me.cxom.melee2.game.combat;
+package me.cxom.melee2.common.model;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;

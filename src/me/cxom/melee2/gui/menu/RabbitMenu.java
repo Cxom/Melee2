@@ -14,14 +14,14 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import me.cxom.melee2.MeleeGameManager;
+import me.cxom.melee2.RabbitGameManager;
 import me.cxom.melee2.common.model.GameState;
 import me.cxom.melee2.game.PvpGame;
 import me.cxom.melee2.game.lobby.Lobby;
 
-public class MeleeMenu implements Listener {
+public class RabbitMenu implements Listener {
 	
-public static final String title = "Melee Games";
+public static final String title = "Rabbit Games";
 	
 	public static Inventory createMenu(Collection<Lobby> lobbies){
 		
@@ -64,7 +64,7 @@ public static final String title = "Melee Games";
 				
 				//Get game name and add player
 				String game = ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName());
-				MeleeGameManager.addPlayerToGameLobby(game, (Player) e.getWhoClicked());
+				RabbitGameManager.addPlayerToGameLobby(game, (Player) e.getWhoClicked());
 				
 				//Close inventory
 				e.getWhoClicked().closeInventory();

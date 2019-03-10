@@ -1,4 +1,4 @@
-package me.cxom.melee2.game;
+package me.cxom.melee2;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -10,15 +10,15 @@ import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
+import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.arena.configuration.ArenaManager;
+import me.cxom.melee2.game.PvpGame;
+import me.cxom.melee2.game.lobby.Lobby;
+import me.cxom.melee2.game.melee.MeleeGame;
+import me.cxom.melee2.game.melee.MeleeGameController;
 import me.cxom.melee2.gui.menu.MeleeMenu;
 
 public class MeleeGameManager {
-
-	//This is never going to not be a top level class, so there's no real time it
-	// could predictably have any superinterfaces
-	// As such, there's no real benefit in making it a singleton, and leaving it static
-	// reduces bloat
 	
 //	private MeleeGameManager() {}
 //	
@@ -26,9 +26,6 @@ public class MeleeGameManager {
 //	public static MeleeGameManager getManager(){
 //		return instance;
 //	}
-	
-	
-	// This class is a "Global controller" - manages concurrent models, adding, removing
 	
 	//The controllers should NEVER be exposed outside this class
 	private static Map<String, MeleeGameController> controllers = new HashMap<>();
@@ -42,21 +39,25 @@ public class MeleeGameManager {
 	private static Map<String, Lobby> lobbies = new HashMap<>();
 	public static Lobby getLobby(String lobby) { return lobbies.get(lobby); }
 	
-	// METHODS
-	public static void createGames() {
-		ArenaManager.getArenas().forEach((arena) -> {
-			MeleeGameController controller = new MeleeGameController(arena);
-			controllers.put(arena.getName(), controller);
-			models.put(arena.getName(), controller.getGame());
-			lobbies.put(arena.getName(), controller.getLobby());
-		});
+	private static final String MENU_NAME = "Melee Games";
+	
+	/*****************************************/
+	
+	//TODO Should this take a string arg? Any usefulness? Speculative?
+	private static void createGame(MeleeArena arena) {
+		MeleeGameController controller = new MeleeGameController(arena);
+		controllers.put(arena.getName(), controller);
+		models.put(arena.getName(), controller.getGame());
+		lobbies.put(arena.getName(), controller.getLobby());
+	}
+	
+	public static void createAllGames() {
+		ArenaManager.getMeleeArenas().forEach(MeleeGameManager::createGame);
 	}
 	
 	public static void stopAllGames() {
 		controllers.values().forEach(MeleeGameController::stopGame);
 	}
-
-	
 	
 	public static boolean addPlayerToGameLobby(String lobby, Player player) {
 		
@@ -90,7 +91,7 @@ public class MeleeGameManager {
 		return MeleeMenu.createMenu(getLobbyList());
 	}
 	
-	public static Inventory getMenu(Predicate<MeleeGame> filter) {
+	public static Inventory getMenu(Predicate<PvpGame> filter) {
 		Set<Lobby> lobbies = getLobbyList().stream()
 											   .filter(lobby -> filter.test(lobby.getGame()))
 											   .collect(Collectors.toSet());

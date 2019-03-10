@@ -3,6 +3,7 @@ package me.cxom.melee2.player;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import me.cxom.melee2.util.InventoryUtils;
@@ -11,13 +12,13 @@ public class MeleePlayer {
 
 	private final UUID uuid;
 	
-	private final MeleeColor color;
+	private final MinigameColor color;
 	
 	
 	
 	private int kills = 0;
 	
-	public MeleePlayer(Player player, MeleeColor color){
+	public MeleePlayer(Player player, MinigameColor color){
 		this.uuid = player.getUniqueId();
 		this.color = color;
 		
@@ -33,8 +34,16 @@ public class MeleePlayer {
 		return Bukkit.getPlayer(uuid);
 	}
 	
-	public MeleeColor getColor(){
+	public MinigameColor getColor(){
 		return color;
+	}
+	
+	public String getColoredName() {
+		return getColor().getChatColor() + getPlayer().getName() + ChatColor.RESET;
+	}
+	
+	public String getColoredName(ChatColor format) {
+		return getColor().getChatColor() + "" + format + getPlayer().getName() + ChatColor.RESET;
 	}
 	
 	public int getKills(){

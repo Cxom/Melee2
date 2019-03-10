@@ -22,7 +22,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 
 import me.cxom.melee2.Melee;
-import me.cxom.melee2.player.MeleeColor;
+import me.cxom.melee2.player.MinigameColor;
 
 public class InventoryUtils {
 
@@ -65,7 +65,7 @@ public class InventoryUtils {
 		}
 	}
 	
-	public static void equipPlayer(Player player, MeleeColor color) {
+	public static void equipPlayer(Player player, MinigameColor color) {
 		PlayerInventory pi = player.getInventory();
 		pi.setItem(0, makeUnbreakable(new ItemStack(Material.STONE_SWORD)));
 		ItemStack b = makeUnbreakable(new ItemStack(Material.BOW));
@@ -77,7 +77,7 @@ public class InventoryUtils {
 		pi.setArmorContents(getArmorSet(color));
 	}
 	
-	public static ItemStack[] getArmorSet(MeleeColor color){
+	public static ItemStack[] getArmorSet(MinigameColor color){
 		Color armorColor = color.getBukkitColor();
 
 		ItemStack helmetItem = new ItemStack(Material.LEATHER_HELMET);

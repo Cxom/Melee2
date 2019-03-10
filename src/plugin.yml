@@ -1,10 +1,14 @@
 name: Melee
 main: me.cxom.melee2.Melee
-version: 0.10.3
-description: Rendition 2 of Whe Minecraft minigame Melee
+version: 0.10.3vRabbit-Refactor-0.4.1
+api-version: 1.13
+description: Rendition 2 of The Minecraft minigame Melee
 depend: [MovementPlusPlus]
 
 commands:
     melee:
         usage: /melee [leave|join <game>]
         description: For the Melee minigame.
+    rabbit:
+        usage: /rabbit [leave|join <game>]
+        description: For the Rabbit minigame.

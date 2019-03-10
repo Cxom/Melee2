@@ -1,8 +1,9 @@
-package me.cxom.melee2.game;
+package me.cxom.melee2.game.melee;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,13 +19,15 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import me.cxom.melee2.Melee;
 
-public class MeleeEventListeners implements Listener {
-
-	// Listeners belong in this class if the represent a change in the model
-	// That 
+/**
+ * This class is effectively a part of the Control layer of the MVC
+ * As such, it listens to events in the game, and propagates to the M, V, and C layers
+ * as appropriate.
+ */
+class MeleeEventListeners implements Listener {
 	
-	private final MeleeGameController controller;
-	private final MeleeGame game;
+	private final MeleeGameController controller; // Controller
+	private final MeleeGame game; // Model
 	
 	MeleeEventListeners(MeleeGameController controller, MeleeGame game){
 		this.controller = controller;
@@ -36,40 +39,53 @@ public class MeleeEventListeners implements Listener {
 	
 	@EventHandler
 	public void onPlayerDeath(EntityDamageEvent e){
-		//Player's in game?
-		if (! (game.hasPlayer(e.getEntity().getUniqueId()))) return;
+		
+		UUID entityId = e.getEntity().getUniqueId();
+		
+		//Is the player in the game?
+		if (!game.hasPlayer(entityId)) return;
 		Player killed = (Player) e.getEntity();
 		
-		//Actually killed?
+		//Is the damage lethal?
 		if (e.getFinalDamage() < killed.getHealth()) return;
 		
-		//Killed by an entity?
+		Player killer = null;
+		EntityDamageByEntityEvent edbee = null;
+		
+		//Was the player killed by an entity?
 		if (e instanceof EntityDamageByEntityEvent){
-			EntityDamageByEntityEvent edbee = (EntityDamageByEntityEvent) e;
-			Entity killer = edbee.getDamager();
+			edbee = (EntityDamageByEntityEvent) e;
+			Entity killingEntity = edbee.getDamager();
 			
-			//Killed by a player (also in game)?
-			if (killer instanceof Player && game.hasPlayer(killer.getUniqueId())){
-				controller.handleKill(game.getPlayer(killer.getUniqueId()), game.getPlayer(killed.getUniqueId()), edbee);
-				return;
+			// Determine killer
+			if (killingEntity instanceof Player && game.hasPlayer(killingEntity.getUniqueId())){
+				//Killed by a player (also in game)
+				killer = (Player) killingEntity;	
 				
-			//Killed by an arrow shot by a player?
-			} else if (killer instanceof Arrow && ((Arrow) killer).getShooter() instanceof Player){
-				Player shooter = (Player) ((Arrow) killer).getShooter();
-				killer.remove();
+			} else if (killingEntity instanceof Arrow && ((Arrow) killingEntity).getShooter() instanceof Player){
+				//Killed by an arrow shot by a player (not sure if player in game yet)
 				
-				//Player who shot arrow is in game?
+				Player shooter = (Player) ((Arrow) killingEntity).getShooter();
+				killingEntity.remove();
+				
 				if (game.hasPlayer(shooter.getUniqueId())){
+					//Player who shot arrow is in game
+					killer = shooter;
 					
-					//TODO Change the name of this method - handleKill?
-					controller.handleKill(game.getPlayer(shooter.getUniqueId()), game.getPlayer(killed.getUniqueId()), edbee);
-					return;
 				}
 			}
 		}
-		//Killed by not an entity, or an entity not in the game
-		controller.handleDeath(killed, e);
+		
+		if (killer != null) {
+			controller.propagateKill(killer, killed, edbee);
+		} else {
+			controller.propagateDeath(killed, e); //Killed by not an entity, or an entity not in the game
+		}
+		
 	}
+	
+	
+	
 	
 	// Quit & Leave Events
 	
@@ -106,7 +122,7 @@ public class MeleeEventListeners implements Listener {
 			 && ! command.toLowerCase().startsWith("/melee leave")) {
 				
 				e.setCancelled(true);
-				player.sendMessage(Melee.CHAT_PREFIX + ChatColor.RED + "You do not have permission to use non-messaging commands in Melee. If you wish to leave the match, type /melee leave.");
+				player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + "You do not have permission to use non-messaging commands in Melee. If you wish to leave the match, type /melee leave.");
 				
 			}
 			
