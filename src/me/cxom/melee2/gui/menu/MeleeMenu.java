@@ -21,7 +21,7 @@ import me.cxom.melee2.game.lobby.Lobby;
 
 public class MeleeMenu implements Listener {
 	
-public static final String title = "Melee Games";
+	public static final String title = "Melee Games";
 	
 	public static Inventory createMenu(Collection<Lobby> lobbies){
 		

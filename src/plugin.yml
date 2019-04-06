@@ -12,3 +12,5 @@ commands:
     rabbit:
         usage: /rabbit [leave|join <game>]
         description: For the Rabbit minigame.
+    games:
+        aliases: [join]

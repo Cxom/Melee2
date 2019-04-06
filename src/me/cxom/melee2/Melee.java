@@ -1,15 +1,21 @@
 package me.cxom.melee2;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.cxom.melee2.arena.configuration.ArenaManager;
+import me.cxom.melee2.game.lobby.Lobby;
 import me.cxom.melee2.gui.menu.MeleeMenu;
+import me.cxom.melee2.gui.menu.MinigameMenu;
 import me.cxom.melee2.gui.menu.RabbitMenu;
 import me.cxom.melee2.util.InventoryUtils;
 import me.cxom.melee2.util.PlayerProfile;
@@ -70,6 +76,18 @@ public class Melee extends JavaPlugin {
 			Player player = (Player) sender;
 			
 			player.openInventory(RabbitGameManager.getMenu());			
+		}
+		
+		if (label.equalsIgnoreCase("games") || label.equalsIgnoreCase("join")) {
+			if (! (sender instanceof Player)) return true;
+			Player player = (Player) sender;
+			
+			List<Lobby> allLobbies = new ArrayList<Lobby>();
+			allLobbies.addAll(MeleeGameManager.getLobbyList());
+			allLobbies.addAll(RabbitGameManager.getLobbyList());
+			
+			Inventory allLobbiesMenu = MinigameMenu.createMenu("All Games", allLobbies);
+			player.openInventory(allLobbiesMenu);
 		}
 		
 		if ( ! label.equalsIgnoreCase("melee")) return true;

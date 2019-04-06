@@ -61,35 +61,48 @@ public class MinigameMenu implements Listener {
 	
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent e){
-		
-		//Clicked in the inventory?
-		if (e.getClickedInventory() == null) return;
-		
-		//Clicked in the melee menu?
-		if (menuName.equals(e.getClickedInventory().getName())){
+		if (clickedInMenu(e)){
 			
 			//Prevent picking up an item
 			e.setCancelled(true);
 			
-			//Clicked a valid item
-			if (e.getCurrentItem() != null
-			 && e.getCurrentItem().hasItemMeta()
-			 && e.getCurrentItem().getItemMeta().hasLore()
-			 && ! GameState.STOPPED.toString().equals(ChatColor.stripColor(e.getCurrentItem().getItemMeta().getLore().get(1)))){ //TODO i18n : replace toString
+			if (clickedAValidItem(e.getCurrentItem())){ 
 				
-				//Get game name and add player
 				String gameName = ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName());
+				Player playerToAdd = (Player) e.getWhoClicked();
 				
-				if (lobbies.size() - 1 <= e.getSlot()) {
-					lobbies.get(e.getSlot()).addPlayerIfPossible((Player) e.getWhoClicked());
+				if (clickedOnLobby(e)) {
+					Lobby lobbyToAddTo = getClickedLobby(e);
+					lobbyToAddTo.addPlayerIfPossible(playerToAdd);
 				}
+				
 //				gameManager.addPlayerToGameLobby(gameName, (Player) e.getWhoClicked());
 				
-				//Close inventory
-				e.getWhoClicked().closeInventory();
+				playerToAdd.closeInventory();
 					
 			}
 		}
+	}
+	
+	private boolean clickedInMenu(InventoryClickEvent e) {
+		return e.getClickedInventory() != null
+			&& e.getClickedInventory().getName().equals(menuName);
+	}
+	
+	private boolean clickedOnLobby(InventoryClickEvent e) {
+		return lobbies.size() - 1 <= e.getSlot();
+	}
+	
+	private Lobby getClickedLobby(InventoryClickEvent e) {
+		return lobbies.get(e.getSlot());
+	}
+	
+	private boolean clickedAValidItem(ItemStack currentItem) {
+		return currentItem != null
+			&& currentItem.hasItemMeta()
+			&& currentItem.getItemMeta().hasLore()
+			&& ! GameState.STOPPED.toString().equals(ChatColor.stripColor(currentItem.getItemMeta().getLore().get(1)));
+		//TODO i18n : replace toString ^^
 	}
 	
 	//Prevent modifying menu
