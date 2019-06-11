@@ -47,6 +47,7 @@ public class PlayerProfile {
 	private final GameMode gamemode;
 	private final boolean canFly;
 	private final boolean flying;
+	private final boolean glowing;
 	private final boolean invulnerable;
 	private final int xpLvl;
 	private final float xp;
@@ -63,6 +64,7 @@ public class PlayerProfile {
 		this.gamemode = player.getGameMode();
 		this.canFly = player.getAllowFlight();
 		this.flying = player.isFlying();
+		this.glowing = player.isGlowing();
 		this.invulnerable = player.isInvulnerable();
 		this.xpLvl = player.getLevel();
 		this.xp = player.getExp();
@@ -83,6 +85,7 @@ public class PlayerProfile {
 		player.setGameMode(gamemode);
 		player.setAllowFlight(canFly);
 		player.setFlying(flying);
+		player.setGlowing(glowing);
 		player.setInvulnerable(invulnerable);
 		player.setLevel(xpLvl);
 		player.setExp(xp);
