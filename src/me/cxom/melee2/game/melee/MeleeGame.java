@@ -79,6 +79,10 @@ public class MeleeGame implements PvpGame, Listener {
 		return leader;
 	}
 	
+	public String getName() {
+		return "Melee";
+	}
+	
 	public MeleePlayer getPlayer(UUID uniqueId) {
 		return players.get(uniqueId);
 	}

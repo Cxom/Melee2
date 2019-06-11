@@ -58,7 +58,7 @@ public class Lobby {
 //	private LobbyState lobbyState = LobbyState.UNAVAILABLE;
 	
 	public Lobby(PvpGame game, Consumer<Set<Player>> startMethod) {
-		this(game.getArena().getName(),
+		this(game.getName() + " on " + game.getArena().getName(),
 			 game,
 			 game.getArena().getPregameLobby(),
 			 game.getArena().getPlayersNeededToStart(),

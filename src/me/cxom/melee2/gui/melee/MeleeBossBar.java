@@ -1,6 +1,6 @@
 package me.cxom.melee2.gui.melee;
 
-import me.cxom.jailbreak3.gui.MinigameBossBar;
+import me.cxom.melee2.gui.MinigameBossBar;
 import me.cxom.melee2.player.MeleePlayer;
 import net.md_5.bungee.api.ChatColor;
 

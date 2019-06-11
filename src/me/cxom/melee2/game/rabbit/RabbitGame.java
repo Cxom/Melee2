@@ -193,6 +193,10 @@ public class RabbitGame implements PvpGame, Listener {
 		return flagLeader;
 	}
 	
+	public String getName() {
+		return "Rabbit";
+	}
+	
 	public RabbitPlayer getPlayer(UUID uniqueId) {
 		return players.get(uniqueId);
 	}
@@ -364,6 +368,7 @@ public class RabbitGame implements PvpGame, Listener {
 	private void givePlayerFlag(RabbitPlayer rp) {
 		rp.getPlayer().getInventory().setHelmet(new ItemStack(Material.WHITE_BANNER));
 		this.flagHolder = rp;
+		rp.getPlayer().setGlowing(true);
 		MovementPlayer mvrp = MovementPlusPlus.getMovementPlayer(rp.getUniqueId());
 		mvrp.setMaxStamina(mvrp.getMaxStamina() * 2);
 	}
@@ -399,6 +404,7 @@ public class RabbitGame implements PvpGame, Listener {
 		mvrp.setMaxStamina(mvrp.getMaxStamina() / 2);
 		
 		removeFlagFromPlayer(flagHolder);
+		flagHolder.getPlayer().setGlowing(false);
 		this.flagHolder = null;
 		
 		Block droppedFlagBlock = flagHolderDeathLocation.getBlock();

@@ -16,12 +16,15 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import me.cxom.melee2.Melee;
 import me.cxom.melee2.common.model.GameState;
 import me.cxom.melee2.game.PvpGame;
 import me.cxom.melee2.game.lobby.Lobby;
 
 public class MinigameMenu implements Listener {
 
+	private static boolean eventsRegistered = false;
+	
 	private final String menuName;
 	
 	private List<Lobby> lobbies;
@@ -30,6 +33,10 @@ public class MinigameMenu implements Listener {
 		//this.gameManager = gameManager;
 		this.menuName = menuName;
 		this.lobbies = new ArrayList<Lobby>(lobbies);
+		if (!eventsRegistered) {
+			Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
+			eventsRegistered = true;
+		}
 	}
 	
 //	public static final String title = "Melee Games";
@@ -44,17 +51,20 @@ public class MinigameMenu implements Listener {
 		
 		Inventory menu = Bukkit.createInventory(null, (lobbies.size() / 9 + 1) * 9, menuName); 
 		
+		int slotIndex = 0;
 		for (Lobby lobby : lobbies){
 			PvpGame game = lobby.getGame();
 			
 			ItemStack gameMarker = game.getGameState().getMenuItem();
 			ItemMeta meta = gameMarker.getItemMeta();
-			meta.setDisplayName(ChatColor.BLUE + game.getArena().getName());
+			meta.setDisplayName(ChatColor.BLUE + lobby.getName());
 			meta.setLore(Arrays.asList(game.getGameState().getChatColor() + game.getGameState().name(),
 									   lobby.getPlayersWaiting() + " player(s) in lobby."));
 			gameMarker.setItemMeta(meta);
 			
-			menu.addItem(gameMarker);
+			menu.setItem(slotIndex, gameMarker);
+			
+			slotIndex++;
 		}
 		return menu;
 	}
@@ -68,7 +78,7 @@ public class MinigameMenu implements Listener {
 			
 			if (clickedAValidItem(e.getCurrentItem())){ 
 				
-				String gameName = ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName());
+//				String gameName = ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName());
 				Player playerToAdd = (Player) e.getWhoClicked();
 				
 				if (clickedOnLobby(e)) {

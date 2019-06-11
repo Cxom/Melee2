@@ -13,13 +13,13 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import me.cxom.jailbreak3.gui.Killfeed;
-import me.cxom.jailbreak3.gui.MinigameBossBar;
 import me.cxom.melee2.Melee;
 import me.cxom.melee2.common.model.AttackMethod;
 import me.cxom.melee2.game.rabbit.RabbitGame;
 import me.cxom.melee2.game.rabbit.RabbitGame.FlagStatus;
 import me.cxom.melee2.game.rabbit.RabbitGameObserver;
+import me.cxom.melee2.gui.Killfeed;
+import me.cxom.melee2.gui.MinigameBossBar;
 import me.cxom.melee2.gui.melee.MeleeTabList;
 import me.cxom.melee2.player.RabbitPlayer;
 import me.cxom.melee2.util.FireworkUtils;
@@ -183,6 +183,7 @@ public class RabbitGUI implements RabbitGameObserver {
 	}
 	
 	private void reset() {
+		// TODO change all these to use suppliers?
 		killfeed.removeAll();
 		bossbar.removeAll();
 		tablist.removeAll();

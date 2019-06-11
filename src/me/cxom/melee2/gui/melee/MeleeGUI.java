@@ -12,10 +12,10 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import me.cxom.jailbreak3.gui.Killfeed;
 import me.cxom.melee2.Melee;
 import me.cxom.melee2.common.model.AttackMethod;
 import me.cxom.melee2.game.melee.MeleeGame;
+import me.cxom.melee2.gui.Killfeed;
 import me.cxom.melee2.messaging.Messaging;
 import me.cxom.melee2.player.MeleePlayer;
 import me.cxom.melee2.util.FireworkUtils;

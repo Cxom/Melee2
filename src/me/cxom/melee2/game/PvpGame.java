@@ -5,6 +5,8 @@ import me.cxom.melee2.common.model.GameState;
 
 public interface PvpGame {
 	
+	public String getName();
+	
 	public GameState getGameState();
 	
 //	default public boolean isAvailable() {
