@@ -22,7 +22,6 @@ import me.cxom.melee2.gui.Killfeed;
 import me.cxom.melee2.gui.MinigameBossBar;
 import me.cxom.melee2.gui.melee.MeleeTabList;
 import me.cxom.melee2.player.RabbitPlayer;
-import me.cxom.melee2.util.FireworkUtils;
 
 public class RabbitGUI implements RabbitGameObserver {
 
@@ -120,7 +119,7 @@ public class RabbitGUI implements RabbitGameObserver {
 	
 	public void playKill(RabbitPlayer killer, RabbitPlayer killed, EntityDamageByEntityEvent e, Location killLocation) {
 		
-		FireworkUtils.detontateInstantly(FireworkUtils.spawnFirework(killLocation.add(0, 1.1, 0), killed.getColor(), killer.getColor(), 0));
+//		FireworkUtils.detontateInstantly(FireworkUtils.spawnFirework(killLocation.add(0, 1.1, 0), killed.getColor(), killer.getColor(), 0));
 		
 		
 //		if (killer.equals(game.getLeader())) {
@@ -159,7 +158,7 @@ public class RabbitGUI implements RabbitGameObserver {
 			@Override
 			public void run(){
 				if (i > 0){
-					FireworkUtils.spawnFirework(game.getSpawns().next(), winnersColor, r.nextInt(2) + 1);
+//					FireworkUtils.spawnFirework(game.getSpawns().next(), winnersColor, r.nextInt(2) + 1);
 					i--;
 				} else {
 					this.cancel();

@@ -6,7 +6,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
-import me.cxom.melee2.util.InventoryUtils;
+import net.punchtree.minigames.utility.color.MinigameColor;
+import net.punchtree.minigames.utility.player.InventoryUtils;
 
 public class MeleePlayer {
 

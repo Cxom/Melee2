@@ -18,7 +18,6 @@ import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.gui.Killfeed;
 import me.cxom.melee2.messaging.Messaging;
 import me.cxom.melee2.player.MeleePlayer;
-import me.cxom.melee2.util.FireworkUtils;
 
 public class MeleeGUI {
 
@@ -100,7 +99,7 @@ public class MeleeGUI {
 	
 	public void playKill(MeleePlayer killer, MeleePlayer killed, EntityDamageByEntityEvent e, Location killLocation) {
 		
-		FireworkUtils.detontateInstantly(FireworkUtils.spawnFirework(killLocation.add(0, 1.1, 0), killed.getColor(), killer.getColor(), 0));
+//		FireworkUtils.detontateInstantly(FireworkUtils.spawnFirework(killLocation.add(0, 1.1, 0), killed.getColor(), killer.getColor(), 0));
 		
 		updateBossBarOnKill(killer);
 		tablist.updatePlayer(killer);
@@ -138,7 +137,7 @@ public class MeleeGUI {
 			@Override
 			public void run(){
 				if (i > 0){
-					FireworkUtils.spawnFirework(game.getSpawns().next(), winnersColor, r.nextInt(2) + 1);
+//					FireworkUtils.spawnFirework(game.getSpawns().next(), winnersColor, r.nextInt(2) + 1);
 					i--;
 				} else {
 					this.cancel();

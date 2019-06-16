@@ -17,8 +17,8 @@ import me.cxom.melee2.game.lobby.Lobby;
 import me.cxom.melee2.gui.menu.MeleeMenu;
 import me.cxom.melee2.gui.menu.MinigameMenu;
 import me.cxom.melee2.gui.menu.RabbitMenu;
-import me.cxom.melee2.util.InventoryUtils;
-import me.cxom.melee2.util.PlayerProfile;
+import net.punchtree.minigames.utility.player.InventoryUtils;
+import net.punchtree.minigames.utility.player.PlayerProfile;
 
 public class Melee extends JavaPlugin {
 

@@ -14,8 +14,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import me.cxom.melee2.Melee;
 import me.cxom.melee2.game.PvpGame;
 import me.cxom.melee2.messaging.Messaging;
-import me.cxom.melee2.util.PlayerProfile;
-import me.cxom.melee2.util.PlayerUtils;
+import net.punchtree.minigames.utility.player.PlayerProfile;
+import net.punchtree.minigames.utility.player.PlayerUtils;
 
 public class Lobby {
 	

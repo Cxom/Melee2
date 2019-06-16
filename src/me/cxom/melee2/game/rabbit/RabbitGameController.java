@@ -1,21 +1,17 @@
 package me.cxom.melee2.game.rabbit;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import com.trinoxtion.movement.MovementPlusPlus;
 
-import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.RabbitArena;
 import me.cxom.melee2.common.model.GameState;
 import me.cxom.melee2.game.lobby.Lobby;
 import me.cxom.melee2.gui.rabbit.RabbitGUI;
-import me.cxom.melee2.player.RabbitPlayer;
-import me.cxom.melee2.util.PlayerProfile;
+import net.punchtree.minigames.utility.player.PlayerProfile;
 
 public class RabbitGameController /*extends PvpGameController */implements RabbitGameObserver {
 

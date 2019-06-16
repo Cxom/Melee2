@@ -26,9 +26,9 @@ import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.common.model.GameState;
 import me.cxom.melee2.game.PvpGame;
 import me.cxom.melee2.player.MeleePlayer;
-import me.cxom.melee2.player.MinigameColor;
-import me.cxom.melee2.util.CirculatingList;
-import me.cxom.melee2.util.PlayerUtils;
+import net.punchtree.minigames.utility.collections.CirculatingList;
+import net.punchtree.minigames.utility.color.MinigameColor;
+import net.punchtree.minigames.utility.player.PlayerUtils;
 
 /**
  * Represents an instance of a Melee game on one arena. 

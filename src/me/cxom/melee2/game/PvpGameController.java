@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import me.cxom.melee2.common.model.GameState;
 import me.cxom.melee2.game.lobby.Lobby;
-import me.cxom.melee2.util.PlayerProfile;
+import net.punchtree.minigames.utility.player.PlayerProfile;
 
 public abstract class PvpGameController {
 	
