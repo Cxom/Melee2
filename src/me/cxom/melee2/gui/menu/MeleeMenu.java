@@ -33,6 +33,7 @@ public class MeleeMenu implements Listener {
 			PvpGame game = lobby.getGame();
 			
 			ItemStack gameMarker = game.getGameState().getMenuItem();
+			gameMarker.setAmount(Math.min(64, Math.max(1, lobby.getPlayersWaiting())));
 			ItemMeta meta = gameMarker.getItemMeta();
 			meta.setDisplayName(ChatColor.BLUE + game.getArena().getName());
 			meta.setLore(Arrays.asList(game.getGameState().getChatColor() + game.getGameState().name(),

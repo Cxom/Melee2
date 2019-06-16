@@ -20,6 +20,7 @@ public class LobbyControls implements Listener {
 	
 	private static final ItemStack READY_BLOCK;
 	private static final ItemStack NOT_READY_BLOCK;
+	private static final ItemStack LEAVE_LOBBY;
 	static {
 		//Initializing the item meta for READY_BLOCK
 		READY_BLOCK = new ItemStack(Material.GREEN_TERRACOTTA);
@@ -36,6 +37,11 @@ public class LobbyControls implements Listener {
 		im.setLore(Arrays.asList(ChatColor.GRAY + "Right click when you're",
                                                   "ready to play!"));
 		NOT_READY_BLOCK.setItemMeta(im);
+		
+		LEAVE_LOBBY = new ItemStack(Material.BARRIER);
+		im = LEAVE_LOBBY.getItemMeta();
+		im.setDisplayName(ChatColor.RED + "Leave the lobby");
+		LEAVE_LOBBY.setItemMeta(im);
 	}
 	
 	private final Lobby lobby;
@@ -47,7 +53,8 @@ public class LobbyControls implements Listener {
 	
 	public void giveLobbyControls(Player player) {
 		player.getInventory().clear();
-		player.getInventory().setItem(8, NOT_READY_BLOCK);
+		player.getInventory().setItem(0, NOT_READY_BLOCK);
+		player.getInventory().setItem(8, LEAVE_LOBBY);
 	}
 	
 	@EventHandler
@@ -59,7 +66,10 @@ public class LobbyControls implements Listener {
 		
 		if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			
-			if (READY_BLOCK.equals(e.getItem())){
+			if (LEAVE_LOBBY.equals(e.getItem())) {
+				lobby.removeAndRestorePlayer(e.getPlayer());
+				e.setCancelled(true);
+			} else if (READY_BLOCK.equals(e.getItem())){
 				lobby.setPlayerReadiness(player, false);
 				e.getPlayer().getInventory().setItem(8, NOT_READY_BLOCK);
 				e.setCancelled(true);
