@@ -33,6 +33,7 @@ public class MinigameMenu implements Listener {
 		//this.gameManager = gameManager;
 		this.menuName = menuName;
 		this.lobbies = new ArrayList<Lobby>(lobbies);
+		//FIXME don't do this jank - it doesn't work
 		if (!eventsRegistered) {
 			Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
 			eventsRegistered = true;
@@ -73,12 +74,10 @@ public class MinigameMenu implements Listener {
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent e){
 		if (clickedInMenu(e)){
-			
 			//Prevent picking up an item
 			e.setCancelled(true);
 			
 			if (clickedAValidItem(e.getCurrentItem())){ 
-				
 //				String gameName = ChatColor.stripColor(e.getCurrentItem().getItemMeta().getDisplayName());
 				Player playerToAdd = (Player) e.getWhoClicked();
 				
@@ -101,7 +100,7 @@ public class MinigameMenu implements Listener {
 	}
 	
 	private boolean clickedOnLobby(InventoryClickEvent e) {
-		return lobbies.size() - 1 <= e.getSlot();
+		return e.getSlot() < lobbies.size();
 	}
 	
 	private Lobby getClickedLobby(InventoryClickEvent e) {

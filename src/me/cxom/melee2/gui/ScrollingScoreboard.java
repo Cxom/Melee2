@@ -29,9 +29,8 @@ public class ScrollingScoreboard {
 	
 	public ScrollingScoreboard(String title){
 		scoreboard = Bukkit.getServer().getScoreboardManager().getNewScoreboard();
-		sidebar = scoreboard.registerNewObjective("scroller", "dummy");
+		sidebar = scoreboard.registerNewObjective("scroller", "dummy", title);
 		sidebar.setDisplaySlot(DisplaySlot.SIDEBAR);
-		sidebar.setDisplayName(title);
 	}
 
 	public void sendMessage(final String newMessage){

@@ -13,6 +13,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import me.cxom.melee2.Melee;
 
@@ -67,15 +68,19 @@ public class LobbyControls implements Listener {
 		if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			
 			if (LEAVE_LOBBY.equals(e.getItem())) {
-				lobby.removeAndRestorePlayer(e.getPlayer());
 				e.setCancelled(true);
+				new BukkitRunnable() {
+					public void run() {
+						lobby.removeAndRestorePlayer(e.getPlayer());
+					}
+				}.runTaskLater(Melee.getPlugin(), 1);
 			} else if (READY_BLOCK.equals(e.getItem())){
 				lobby.setPlayerReadiness(player, false);
-				e.getPlayer().getInventory().setItem(8, NOT_READY_BLOCK);
+				e.getPlayer().getInventory().setItem(0, NOT_READY_BLOCK);
 				e.setCancelled(true);
 			} else if (NOT_READY_BLOCK.equals(e.getItem())) {
 				lobby.setPlayerReadiness(player, true);
-				e.getPlayer().getInventory().setItem(8, READY_BLOCK);
+				e.getPlayer().getInventory().setItem(0, READY_BLOCK);
 				e.setCancelled(true);
 				
 				lobby.startCountdownIfStartConditionsMet();
