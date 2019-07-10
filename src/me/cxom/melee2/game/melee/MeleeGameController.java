@@ -20,24 +20,10 @@ import me.cxom.melee2.player.MeleePlayer;
 import net.punchtree.minigames.utility.player.PlayerProfile;
 
 /**
- * 
  * Controls a MeleeGame model and an associated GUI. Its methods are 
  * called by the series of events in MeleeEventListeners.
- * 
  */
 public class MeleeGameController /*extends PvpGameController */ {
-	
-	/*
-	 * List of things that can probably be moved into the model:
-	 * 
-	 *  MovementSystem and adding and removing
-	 *  PlayerProfile is more of a Util class than part of the Player part of the model
-	 *  GameStart code should be moved. The only point of this class is to handle things not encompassed by the model
-	 *   Currently, this includes
-	 *    - Player inventory, xp, etc, saving and loading
-	 *    - Delegation to Model and GUI
-	 *    Notably, the first one would not be necessary in a minigame server environment
-	 */
 	
 	private final MeleeGame game;
 	private final MeleeGUI gui;
@@ -45,22 +31,12 @@ public class MeleeGameController /*extends PvpGameController */ {
 	private final Lobby lobby;
 	
 	public MeleeGameController(MeleeArena arena) {
-		
-		//Create our model instance and our "view" (and movement)
 		game = new MeleeGame(arena, MovementPlusPlus.CXOMS_MOVEMENT);
 		gui = new MeleeGUI(game);
-		
 		lobby = new Lobby(game, this::startGame);
-		
-		//The game is event driven, so we need listeners to call this controller:
 		new MeleeEventListeners(this, game);
-		
 	}
-	
-	
-	// The controller knows the model, so this is *probably* ok since
-	//  the only thing that should know about the controller is other controllers
-	//  Namely, the MeleeGameManager
+
 	public MeleeGame getGame() {
 		return game;
 	}
@@ -69,37 +45,19 @@ public class MeleeGameController /*extends PvpGameController */ {
 		return lobby;
 	}
 	
-	// --------------- EXTERNAL CONTROL METHODS ------------------------- //
 	/*
-	 *  These methods are the only things handled by direct player interaction
-	 *  
-	 *  Everything else is event driven, routed through the MeleeEventListeners class if they
-		  deal with more than just strict domain objects
+	 * Methods in this class should be restricted to only tasks
+	 * dealing outside the scope of regular game objects
 	 */
 	
-	public void addPlayerToLobby(Player player) {
-		lobby.addPlayerIfPossible(player);
-	}
-	
 	public void stopGame(){
-		
 		gui.playStop();
 		
 		resetGame();
 		lobby.removeAndRestoreAll();
 		
 		game.setGameState(GameState.STOPPED);
-		
 	}
-	
-	// ----------- INTERNAL (LISTENER) CONTROL METHODS ------------------ //
-	/*
-	 * - Start
-	 * - Remove player
-	 * - Stop
-	 * 
-	 */
-	
 	
 	/**
 	 * Starts a new game with a set of starting players.
@@ -115,12 +73,6 @@ public class MeleeGameController /*extends PvpGameController */ {
 		gui.playStart();
 	}
 	
-	/*
-	 *  The remove methods are internal because quitting the server is handled by events
-	 *   and /melee leave is handled by a preprocess event
-	 *   
-	 */
-	
 	boolean removePlayerFromGame(Player player) {
 		
 		//Is the remove request valid?
@@ -133,7 +85,7 @@ public class MeleeGameController /*extends PvpGameController */ {
 		// RESTORE STATS & LOCATION
 		PlayerProfile.restore(player);
 		
-		// End the game if it gets down to one left.
+		// End the game if it gets down to one player left.
 		if (game.getPlayers().size() == 1){
 			gui.playTooManyLeft();
 			resetGame();
@@ -150,19 +102,20 @@ public class MeleeGameController /*extends PvpGameController */ {
 		return false;
 	}	
 	
-	// ------------------ HELPER CONTROL METHODS ----------------- //
-	/*
-	 *  - Postgame
-	 *  - Reset
-	 *  
-	 */
+	public void debug(Player player) {
+		player.sendMessage("Game Players: " + game.getPlayers().stream()
+													  .map(mp -> mp.getPlayer().getName())
+													  .collect(Collectors.toList()));
+		player.sendMessage("Game State: " + game.getGameState());
+		player.sendMessage("Lobby players: " + lobby.getPlayers().stream()
+													  .map(Player::getName)
+													  .collect(Collectors.toList()));
+	}
+	
+	// TODO the following methods can be refactored into the model/event listeners
+	// See the way RabbitGameController accomplishes this with observers.
 	
 	void resetGame(){
-		
-		// Reset the GUI first because it needs to reference the player set for the tablist.
-		// I think this is misguided since resetting the GUI shouldn't depend on the changed 
-		// state of the game in order to undo itself, so TODO make an encapsulated tablist GUI component
-		// so that order no longer matters here (also so if we want any reflection of the blank state of the game in the gui)
 		gui.reset();
 		
 		game.getPlayers().forEach(mp -> {
@@ -205,18 +158,6 @@ public class MeleeGameController /*extends PvpGameController */ {
 		Location deathLocation = killed.getLocation();
 		game.handleDeath(mpKilled, e);
 		gui.playDeath(mpKilled, e, deathLocation);
-	}
-
-	//---- DEBUG METHODS ----//
-	
-	public void debug(Player player) {
-		player.sendMessage("Game Players: " + game.getPlayers().stream()
-													  .map(mp -> mp.getPlayer().getName())
-													  .collect(Collectors.toList()));
-		player.sendMessage("Game State: " + game.getGameState());
-		player.sendMessage("Lobby players: " + lobby.getPlayers().stream()
-													  .map(Player::getName)
-													  .collect(Collectors.toList()));
 	}
 	
 }

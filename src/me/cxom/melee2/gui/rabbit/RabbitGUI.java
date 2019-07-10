@@ -44,12 +44,8 @@ public class RabbitGUI implements RabbitGameObserver {
 	 *   
 	 */
 	
-	
-	// THE GAME
 	private RabbitGame game;
 	
-	
-	// THE GUI ELEMENTS
 	private final MinigameBossBar bossbar;
 	private final Killfeed killfeed;
 	//TODO make tablist to record time, not kills -> RabbitTabList

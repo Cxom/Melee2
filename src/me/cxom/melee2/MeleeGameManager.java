@@ -59,11 +59,11 @@ public class MeleeGameManager {
 		controllers.values().forEach(MeleeGameController::stopGame);
 	}
 	
-	public static boolean addPlayerToGameLobby(String lobby, Player player) {
+	public static boolean addPlayerToGameLobby(String lobbyName, Player player) {
 		
-		if (! hasLobby(lobby)) throw new AssertionError("There is no game with the name " + lobby + " !");
+		if (! hasLobby(lobbyName)) throw new AssertionError("There is no game with the name " + lobbyName + " !");
 		
-		getController(lobby).addPlayerToLobby(player);
+		getLobby(lobbyName).addPlayerIfPossible(player);
 		
 		//TODO
 		return true;

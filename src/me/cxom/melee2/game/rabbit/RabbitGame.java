@@ -271,8 +271,7 @@ public class RabbitGame implements PvpGame, Listener {
 		
 		// Remove all players (same as removePlayer
 		this.players.keySet().forEach(movement::removePlayer);
-		
-		
+				
 		// Reset other state
 		this.setLeader(null);
 		this.flagStatus = FlagStatus.NOT_IN_PLAY;

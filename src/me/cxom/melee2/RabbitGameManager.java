@@ -64,7 +64,7 @@ public class RabbitGameManager {
 		
 		if (! hasLobby(lobby)) throw new AssertionError("There is no game with the name " + lobby + " !");
 		
-		getController(lobby).addPlayerToLobby(player);
+		getLobby(lobby).addPlayerIfPossible(player);
 		
 		//TODO
 		return true;

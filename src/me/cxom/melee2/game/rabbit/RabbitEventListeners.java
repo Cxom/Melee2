@@ -111,7 +111,7 @@ class RabbitEventListeners implements Listener {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				controller.resetGame();
+				game.resetGame();
 			}
 		}.runTaskLater(Melee.getPlugin(), MeleeGame.POSTGAME_DURATION_SECONDS * 20);
 	}
