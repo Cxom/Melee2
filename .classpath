@@ -6,8 +6,8 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="F:/MSI - Backup Of Some Stuff 2019-05-18/APIS/spigot-1.13.2.jar"/>
-	<classpathentry kind="lib" path="F:/MSI - Backup Of Some Stuff 2019-05-18/APIS/MovementPlusPlus.jar"/>
-	<classpathentry kind="lib" path="F:/Laptop/Users/Cxom/Desktop/GTA/workspace/Minigames++2/target/minigames2-0.0.1-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="D:/Users/Cxom/Desktop/BuildToolsBuilding/1.14/spigot-1.14.4.jar"/>
+	<classpathentry kind="lib" path="E:/Laptop/Users/Cxom/Desktop/GTA/workspace/Movement++/target/movement-1.9.6.3-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="E:/Laptop/Users/Cxom/Desktop/GTA/workspace/Minigames++2/target/minigames2-0.0.1-SNAPSHOT.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

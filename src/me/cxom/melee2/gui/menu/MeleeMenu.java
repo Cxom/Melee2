@@ -52,7 +52,7 @@ public class MeleeMenu implements Listener {
 		if (e.getClickedInventory() == null) return;
 		
 		//Clicked in the melee menu?
-		if (title.equals(e.getClickedInventory().getName())){
+		if (title.equals(e.getView().getTitle())){
 			
 			//Prevent picking up an item
 			e.setCancelled(true);
@@ -77,7 +77,7 @@ public class MeleeMenu implements Listener {
 	//Prevent modifying menu
 	@EventHandler
 	private static void onMenuDrag(InventoryDragEvent e){
-		if(e.getInventory().getName().equals(title)){
+		if(e.getView().getTitle().equals(title)){
 			e.setCancelled(true);
 		}
 	}

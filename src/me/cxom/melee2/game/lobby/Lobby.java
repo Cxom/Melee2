@@ -236,7 +236,7 @@ public class Lobby {
 				isCountingDown = false;
 			}
 			
-		}.runTaskTimerAsynchronously(Melee.getPlugin(), 20, 20);
+		}.runTaskTimer(Melee.getPlugin(), 20, 20);
 	}
 	
 	public void startNow(){

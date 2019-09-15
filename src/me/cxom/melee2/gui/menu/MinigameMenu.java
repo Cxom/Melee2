@@ -96,7 +96,7 @@ public class MinigameMenu implements Listener {
 	
 	private boolean clickedInMenu(InventoryClickEvent e) {
 		return e.getClickedInventory() != null
-			&& e.getClickedInventory().getName().equals(menuName);
+			&& e.getView().getTitle().equals(menuName);
 	}
 	
 	private boolean clickedOnLobby(InventoryClickEvent e) {
@@ -118,7 +118,7 @@ public class MinigameMenu implements Listener {
 	//Prevent modifying menu
 	@EventHandler
 	private void onMenuDrag(InventoryDragEvent e){
-		if(e.getInventory().getName().equals(menuName)){
+		if(e.getView().getTitle().equals(menuName)){
 			e.setCancelled(true);
 		}
 	}
