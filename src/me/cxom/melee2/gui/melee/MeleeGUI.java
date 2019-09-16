@@ -16,8 +16,8 @@ import me.cxom.melee2.Melee;
 import me.cxom.melee2.common.model.AttackMethod;
 import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.gui.Killfeed;
-import me.cxom.melee2.messaging.Messaging;
 import me.cxom.melee2.player.MeleePlayer;
+import net.punchtree.minigames.messaging.Messaging;
 
 public class MeleeGUI {
 

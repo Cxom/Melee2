@@ -15,9 +15,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import me.cxom.melee2.RabbitGameManager;
-import me.cxom.melee2.common.model.GameState;
-import me.cxom.melee2.game.PvpGame;
-import me.cxom.melee2.game.lobby.Lobby;
+import net.punchtree.minigames.game.GameState;
+import net.punchtree.minigames.game.PvpGame;
+import net.punchtree.minigames.lobby.Lobby;
 
 public class RabbitMenu implements Listener {
 	

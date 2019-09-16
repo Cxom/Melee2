@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.bukkit.Location;
 
+import net.punchtree.minigames.arena.Arena;
+
 public class MeleeArena extends Arena {
 	
 	private final List<Location> spawns;

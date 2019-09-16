@@ -12,11 +12,11 @@ import org.bukkit.inventory.Inventory;
 
 import me.cxom.melee2.arena.RabbitArena;
 import me.cxom.melee2.arena.configuration.ArenaManager;
-import me.cxom.melee2.game.PvpGame;
-import me.cxom.melee2.game.lobby.Lobby;
 import me.cxom.melee2.game.rabbit.RabbitGame;
 import me.cxom.melee2.game.rabbit.RabbitGameController;
 import me.cxom.melee2.gui.menu.RabbitMenu;
+import net.punchtree.minigames.game.PvpGame;
+import net.punchtree.minigames.lobby.Lobby;
 
 public class RabbitGameManager {
 	

@@ -35,10 +35,10 @@ import com.trinoxtion.movement.MovementSystem;
 
 import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.RabbitArena;
-import me.cxom.melee2.common.model.GameState;
-import me.cxom.melee2.game.PvpGame;
 import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.player.RabbitPlayer;
+import net.punchtree.minigames.game.GameState;
+import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.utility.collections.CirculatingList;
 import net.punchtree.minigames.utility.color.MinigameColor;
 import net.punchtree.minigames.utility.player.InventoryUtils;

@@ -13,10 +13,10 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.cxom.melee2.arena.configuration.ArenaManager;
-import me.cxom.melee2.game.lobby.Lobby;
 import me.cxom.melee2.gui.menu.MeleeMenu;
 import me.cxom.melee2.gui.menu.MinigameMenu;
 import me.cxom.melee2.gui.menu.RabbitMenu;
+import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.utility.player.InventoryUtils;
 import net.punchtree.minigames.utility.player.PlayerProfile;
 

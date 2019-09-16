@@ -13,10 +13,10 @@ import com.trinoxtion.movement.MovementPlusPlus;
 
 import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.MeleeArena;
-import me.cxom.melee2.common.model.GameState;
-import me.cxom.melee2.game.lobby.Lobby;
 import me.cxom.melee2.gui.melee.MeleeGUI;
 import me.cxom.melee2.player.MeleePlayer;
+import net.punchtree.minigames.game.GameState;
+import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.utility.player.PlayerProfile;
 
 /**
@@ -33,7 +33,7 @@ public class MeleeGameController /*extends PvpGameController */ {
 	public MeleeGameController(MeleeArena arena) {
 		game = new MeleeGame(arena, MovementPlusPlus.CXOMS_MOVEMENT);
 		gui = new MeleeGUI(game);
-		lobby = new Lobby(game, this::startGame);
+		lobby = new Lobby(game, this::startGame, Melee.MELEE_CHAT_PREFIX);
 		new MeleeEventListeners(this, game);
 	}
 

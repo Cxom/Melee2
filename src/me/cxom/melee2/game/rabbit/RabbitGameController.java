@@ -7,10 +7,11 @@ import org.bukkit.entity.Player;
 
 import com.trinoxtion.movement.MovementPlusPlus;
 
+import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.RabbitArena;
-import me.cxom.melee2.common.model.GameState;
-import me.cxom.melee2.game.lobby.Lobby;
 import me.cxom.melee2.gui.rabbit.RabbitGUI;
+import net.punchtree.minigames.game.GameState;
+import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.utility.player.PlayerProfile;
 
 public class RabbitGameController /*extends PvpGameController */implements RabbitGameObserver {
@@ -24,7 +25,7 @@ public class RabbitGameController /*extends PvpGameController */implements Rabbi
 		// Initialize game, gui, lobby, and event listeners
 		game = new RabbitGame(arena, MovementPlusPlus.CXOMS_MOVEMENT);
 		gui = new RabbitGUI(game);
-		lobby = new Lobby(game, this::startGame);
+		lobby = new Lobby(game, this::startGame, Melee.RABBIT_CHAT_PREFIX);
 		new RabbitEventListeners(this, game, gui);
 	}
 	

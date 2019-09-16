@@ -19,11 +19,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import me.cxom.melee2.Melee;
-import me.cxom.melee2.common.model.GameState;
 import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.gui.rabbit.RabbitGUI;
-import me.cxom.melee2.player.MeleePlayer;
 import me.cxom.melee2.player.RabbitPlayer;
+import net.punchtree.minigames.game.GameState;
 
 /**
  * This class is effectively a part of the Control layer of the MVC
