@@ -1,5 +1,6 @@
 package me.cxom.melee2;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +13,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import me.cxom.melee2.arena.configuration.ArenaManager;
 import me.cxom.melee2.gui.menu.MeleeMenu;
 import me.cxom.melee2.gui.menu.MinigameMenu;
 import me.cxom.melee2.gui.menu.RabbitMenu;
@@ -30,35 +30,34 @@ public class Melee extends JavaPlugin {
 	private static Plugin plugin;
 	public static Plugin getPlugin(){ return plugin; }
 	
-	
-
-
-	
+	static File meleeArenaFolder;
+	static File rabbitArenaFolder;
 	
 	@Override
 	public void onEnable(){
 		
+		// Initialize plugin stuff
 		plugin = this;
-		
+		meleeArenaFolder = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "Arenas");
+		rabbitArenaFolder = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "RabbitArenas");
+
 		// Register Events
 		Bukkit.getServer().getPluginManager().registerEvents(new MeleeMenu(), getPlugin());
 		Bukkit.getServer().getPluginManager().registerEvents(new RabbitMenu(), getPlugin());
 		
 		// Load arenas and create a game for each
-		ArenaManager.loadMeleeArenas();
-		ArenaManager.loadRabbitArenas();
-		
-		System.out.print("Loaded Melee Arenas: ");
-		ArenaManager.getMeleeArenas().forEach(a -> System.out.print(a.getName() + " "));
-		System.out.println();
-		
-		System.out.print("Loaded Rabbit Arenas: ");
-		ArenaManager.getRabbitArenas().forEach(a -> System.out.print(a.getName()+ " "));
-		System.out.println();
 		
 		MeleeGameManager.createAllGames();
-		
 		RabbitGameManager.createAllGames();
+		
+		System.out.print("Created Melee Games: ");
+		MeleeGameManager.getGamesList().forEach(a -> System.out.print(a.getName() + " "));
+		System.out.println();
+		
+		System.out.print("Loaded Rabbit Games: ");
+		RabbitGameManager.getGamesList().forEach(a -> System.out.print(a.getName()+ " "));
+		System.out.println();
+	
 	}
 	
 

@@ -11,10 +11,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
 import me.cxom.melee2.arena.MeleeArena;
-import me.cxom.melee2.arena.configuration.ArenaManager;
+import me.cxom.melee2.arena.configuration.MeleeAndRabbitArenaLoader;
 import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.game.melee.MeleeGameController;
 import me.cxom.melee2.gui.menu.MeleeMenu;
+import net.punchtree.minigames.arena.creation.ArenaManager;
 import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.lobby.Lobby;
 
@@ -52,7 +53,9 @@ public class MeleeGameManager {
 	}
 	
 	public static void createAllGames() {
-		ArenaManager.getMeleeArenas().forEach(MeleeGameManager::createGame);
+		ArenaManager<MeleeArena> meleeArenaManager = new ArenaManager<>(Melee.meleeArenaFolder, MeleeAndRabbitArenaLoader::loadMeleeArena);
+		meleeArenaManager.loadArenas();
+		meleeArenaManager.getArenas().forEach(MeleeGameManager::createGame);
 	}
 	
 	public static void stopAllGames() {
