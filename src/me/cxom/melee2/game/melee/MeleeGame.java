@@ -9,15 +9,11 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
 
 import com.trinoxtion.movement.MovementSystem;
 
@@ -204,7 +200,11 @@ public class MeleeGame implements PvpGame, Listener {
 		}
 	}
 	
-
+	static boolean damageCauseIsProtected(DamageCause cause) {
+		//Fall Damage is off so movement system is non lethal
+		//Entity Explosion is off to prevent firework damage from kills
+		return cause == DamageCause.FALL || cause == DamageCause.ENTITY_EXPLOSION;
+	}
 	
 	// Runs the end of the game
 	private void runPostgameWithWinner(MeleePlayer winner) {
@@ -228,44 +228,6 @@ public class MeleeGame implements PvpGame, Listener {
 		
 		PlayerUtils.perfectStats(player);
 		player.teleport(getSpawns().next());
-	}
-	
-	// -------------------------- //
-	// ------- LISTENERS -------- //
-	
-	// Listeners belong here if they reflect changes to the model that we want
-	// to make be different changes to the model (relationship strictly between
-	// domain objects)
-	
-	@EventHandler
-	public void onEnvironmentDamage(EntityDamageEvent e) {
-		if (entityIsInGame(e.getEntity()) && damageCauseIsProtected(e.getCause())){
-			e.setCancelled(true);
-		}
-	}
-
-	@EventHandler
-	public void onFoodLevelChange(FoodLevelChangeEvent e) {
-		if (entityIsInGame(e.getEntity())){
-			e.setCancelled(true);
-		}
-	}
-
-	@EventHandler
-	public void onPlayerRegainHealth(EntityRegainHealthEvent e) {
-		if (entityIsInGame(e.getEntity())){
-			e.setCancelled(true);
-		}
-	}
-	
-	private boolean damageCauseIsProtected(DamageCause cause) {
-		//Fall Damage is off so movement system is non lethal
-		//Entity Explosion is off to prevent firework damage from kills
-		return cause == DamageCause.FALL || cause == DamageCause.ENTITY_EXPLOSION;
-	}
-
-	private boolean entityIsInGame(Entity entity) {
-		return entity instanceof Player && hasPlayer(entity.getUniqueId());
 	}
 	
 }
