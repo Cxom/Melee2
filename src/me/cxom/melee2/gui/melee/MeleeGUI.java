@@ -1,8 +1,11 @@
 package me.cxom.melee2.gui.melee;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -11,12 +14,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.Scoreboard;
 
 import me.cxom.melee2.Melee;
-import me.cxom.melee2.common.model.AttackMethod;
 import me.cxom.melee2.game.melee.MeleeGame;
-import me.cxom.melee2.gui.Killfeed;
 import me.cxom.melee2.player.MeleePlayer;
+import net.punchtree.minigames.game.pvp.AttackMethod;
+import net.punchtree.minigames.gui.Killfeed;
 import net.punchtree.minigames.messaging.Messaging;
 
 public class MeleeGUI {
@@ -43,24 +47,28 @@ public class MeleeGUI {
 	// THE GAME
 	private MeleeGame game;
 	
-	
 	// THE GUI ELEMENTS
 	private final MeleeBossBar bossbar;
+	private final Scoreboard scoreboard;
 	private final Killfeed killfeed;
 	private final MeleeTabList tablist;
+	
+	private final Set<Player> players = new HashSet<>();
 	
 	public MeleeGUI(MeleeGame game){
 		this.game = game;
 		
+		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 		this.bossbar = new MeleeBossBar();
-		this.killfeed = new Killfeed(Melee.MELEE_CHAT_PREFIX);
+		this.killfeed = new Killfeed(scoreboard, Melee.MELEE_CHAT_PREFIX);
 		this.tablist = new MeleeTabList();
 	}
 	
 	public void addPlayer(MeleePlayer mp) {
 		Player player = mp.getPlayer();
 		
-		killfeed.addPlayer(player);
+		players.add(player);
+		player.setScoreboard(scoreboard);
 		bossbar.addPlayer(player);		
 		tablist.addPlayer(mp);
 	}
@@ -69,12 +77,12 @@ public class MeleeGUI {
 		players.forEach(this::addPlayer);
 	}
 	
-	
 	public void removePlayer(Player player) {
 		player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + "" + ChatColor.ITALIC
 				+ "Removing you from " + game.getArena().getName() + " . . .");
 		
-		killfeed.removePlayer(player);
+		player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+		players.remove(player);
 		bossbar.removePlayer(player);
 		tablist.removePlayer(player);
 	}
@@ -156,7 +164,7 @@ public class MeleeGUI {
 	}
 
 	public void reset() {
-		killfeed.removeAll();
+		players.clear();
 		bossbar.removeAll();
 		tablist.removeAll();
 		bossbar.reset();

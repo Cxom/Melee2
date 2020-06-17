@@ -1,6 +1,6 @@
 name: Melee
 main: me.cxom.melee2.Melee
-version: 0.10.3vRabbit-Refactor-0.5.5
+version: 0.10.3vRabbit-Refactor-0.5.6
 api-version: 1.15
 description: Rendition 2 of The Minecraft minigame Melee
 depend: [PunchTree-Minigames, MovementPlusPlus]
