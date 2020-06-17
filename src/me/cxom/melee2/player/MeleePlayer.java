@@ -6,16 +6,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import net.punchtree.minigames.utility.color.ColoredPlayer;
 import net.punchtree.minigames.utility.color.MinigameColor;
 import net.punchtree.minigames.utility.player.InventoryUtils;
 
-public class MeleePlayer {
+public class MeleePlayer implements ColoredPlayer {
 
 	private final UUID uuid;
 	
 	private final MinigameColor color;
-	
-	
 	
 	private int kills = 0;
 	
