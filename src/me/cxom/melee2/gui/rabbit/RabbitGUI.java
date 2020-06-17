@@ -1,8 +1,11 @@
 package me.cxom.melee2.gui.rabbit;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -12,16 +15,17 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.scoreboard.Scoreboard;
 
 import me.cxom.melee2.Melee;
-import me.cxom.melee2.common.model.AttackMethod;
 import me.cxom.melee2.game.rabbit.RabbitGame;
 import me.cxom.melee2.game.rabbit.RabbitGame.FlagStatus;
 import me.cxom.melee2.game.rabbit.RabbitGameObserver;
-import me.cxom.melee2.gui.Killfeed;
 import me.cxom.melee2.gui.MinigameBossBar;
 import me.cxom.melee2.gui.melee.MeleeTabList;
 import me.cxom.melee2.player.RabbitPlayer;
+import net.punchtree.minigames.game.pvp.AttackMethod;
+import net.punchtree.minigames.gui.Killfeed;
 
 public class RabbitGUI implements RabbitGameObserver {
 
@@ -47,22 +51,27 @@ public class RabbitGUI implements RabbitGameObserver {
 	private RabbitGame game;
 	
 	private final MinigameBossBar bossbar;
+	private final Scoreboard scoreboard;
 	private final Killfeed killfeed;
 	//TODO make tablist to record time, not kills -> RabbitTabList
 	private final MeleeTabList tablist;
+	
+	private final Set<Player> players = new HashSet<>();
 	
 	public RabbitGUI(RabbitGame game){
 		this.game = game;
 		game.registerObserver(this);
 		
+		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 		this.bossbar = new MinigameBossBar();
-		this.killfeed = new Killfeed(Melee.RABBIT_CHAT_PREFIX);
+		this.killfeed = new Killfeed(scoreboard, Melee.RABBIT_CHAT_PREFIX);
 		this.tablist = new MeleeTabList();
 	}
 	
 	public void addPlayer(RabbitPlayer mp) {
 		Player player = mp.getPlayer();
-		killfeed.addPlayer(player);
+		
+		players.add(player);
 		bossbar.addPlayer(player);
 		tablist.addPlayer(mp);
 	}
@@ -76,7 +85,7 @@ public class RabbitGUI implements RabbitGameObserver {
 		player.sendMessage(Melee.RABBIT_CHAT_PREFIX + ChatColor.RED + "" + ChatColor.ITALIC
 				+ "Removing you from " + game.getArena().getName() + " . . .");
 		
-		killfeed.removePlayer(player);
+		players.remove(player);
 		bossbar.removePlayer(player);
 		tablist.removePlayer(player);
 	}
@@ -179,7 +188,7 @@ public class RabbitGUI implements RabbitGameObserver {
 	
 	private void reset() {
 		// TODO change all these to use suppliers?
-		killfeed.removeAll();
+		players.clear();
 		bossbar.removeAll();
 		tablist.removeAll();
 		bossbar.reset();
