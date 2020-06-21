@@ -12,8 +12,14 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -147,6 +153,52 @@ class RabbitEventListeners implements Listener {
 		}
 
 	// Cancelled Events
+		
+		@EventHandler
+		public void onEnvironmentDamage(EntityDamageEvent e) {
+			if (entityIsInGame(e.getEntity()) && RabbitGame.damageCauseIsProtected(e.getCause())){
+				e.setCancelled(true);
+			}
+		}
+
+		@EventHandler
+		public void onFoodLevelChange(FoodLevelChangeEvent e) {
+			if (entityIsInGame(e.getEntity())){
+				e.setCancelled(true);
+			}
+		}
+
+		@EventHandler
+		public void onPlayerRegainHealth(EntityRegainHealthEvent e) {
+			if (entityIsInGame(e.getEntity())){
+				e.setCancelled(true);
+			}
+		}
+		
+		private boolean entityIsInGame(Entity entity) {
+			return entity instanceof Player && game.hasPlayer(entity.getUniqueId());
+		}
+		
+		@EventHandler
+		public void onPlayerOpenInventoryEvent(InventoryOpenEvent e) {
+			if (e.getInventory().getType() != InventoryType.PLAYER && game.hasPlayer(e.getPlayer().getUniqueId())) {			
+				e.setCancelled(true);
+			}
+		}
+		
+		@EventHandler
+		public void onPlayerBlockBreak(BlockBreakEvent e) {
+			if (game.hasPlayer(e.getPlayer())) {
+				e.setCancelled(true);
+			}
+		}
+		
+		@EventHandler
+		public void onPlayerBlockPlace(BlockPlaceEvent e) {
+			if (game.hasPlayer(e.getPlayer())) {
+				e.setCancelled(true);
+			}
+		}
 		
 		private static final List<String> cmds = new ArrayList<String>(Arrays.asList(new String[] {
 				"/m", "/msg", "/message", "/t", "/tell", "/w", "/whisper", "/r",

@@ -131,6 +131,8 @@ public class MeleeGame implements PvpGame, Listener {
 		// Remove all players (same as removePlayer)
 		this.players.keySet().forEach(movement::removePlayer);
 		this.players.clear();
+		this.spawns.shuffle();
+		this.spawns.resetIterator();
 		
 		// Reset other state
 		this.setLeader(null);

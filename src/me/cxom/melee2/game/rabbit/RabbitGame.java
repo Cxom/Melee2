@@ -8,6 +8,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -139,7 +140,7 @@ public class RabbitGame implements PvpGame, Listener {
 	
 	public RabbitGame(RabbitArena arena, MovementSystem movement){
 		this.arena = arena;
-		this.spawns = new CirculatingList<Location>(arena.getSpawns(), true);
+		this.spawns = new CirculatingList<>(arena.getSpawns(), true);
 		this.flagSpawnLocation = arena.getCenterpoint();
 		this.timeToWin = Math.round(arena.getFlagTimeToWin() * (20f / flagTaskRate));
 		
@@ -229,7 +230,7 @@ public class RabbitGame implements PvpGame, Listener {
 	
 	void startGame(Set<Player> startingPlayers) {
 		
-		CirculatingList<MinigameColor> colors = getPlayerColorList();
+		CirculatingList<MinigameColor> colors = new CirculatingList<>(MinigameColor.getDefaults(), true);
 		
 		for (Player player : startingPlayers){
 			
@@ -246,10 +247,6 @@ public class RabbitGame implements PvpGame, Listener {
 		notifyGameStart();
 		
 		doInitialFlagSpawn();
-	}
-	
-	private CirculatingList<MinigameColor> getPlayerColorList(){
-		return new CirculatingList<>(MinigameColor.getConcretes(), true);
 	}
 	
 	private void doInitialFlagSpawn() {
@@ -290,7 +287,8 @@ public class RabbitGame implements PvpGame, Listener {
 		this.setState(GameState.WAITING);
 		
 		this.players.clear();
-		
+		this.spawns.shuffle();
+		this.spawns.resetIterator();
 	}
 	
 	void addPlayer(RabbitPlayer rp) {
@@ -528,36 +526,10 @@ public class RabbitGame implements PvpGame, Listener {
 	//then, you can just use a builder style method chaining with an anonymous instantiation to cancel exactly the events you want
 	//without repeating this code
 	
-
-	@EventHandler
-	public void onEnvironmentDamage(EntityDamageEvent e) {
-		if (entityIsInGame(e.getEntity()) && damageCauseIsProtected(e.getCause())){
-			e.setCancelled(true);
-		}
-	}
-
-	@EventHandler
-	public void onFoodLevelChange(FoodLevelChangeEvent e) {
-		if (entityIsInGame(e.getEntity())){
-			e.setCancelled(true);
-		}
-	}
-
-	@EventHandler
-	public void onPlayerRegainHealth(EntityRegainHealthEvent e) {
-		if (entityIsInGame(e.getEntity())){
-			e.setCancelled(true);
-		}
-	}
-	
-	private boolean damageCauseIsProtected(DamageCause cause) {
+	static boolean damageCauseIsProtected(DamageCause cause) {
 		//Fall Damage is off so movement system is non lethal
 		//Entity Explosion is off to prevent firework damage from kills
 		return cause == DamageCause.FALL || cause == DamageCause.ENTITY_EXPLOSION;
-	}
-	
-	private boolean entityIsInGame(Entity entity) {
-		return entity instanceof Player && hasPlayer(entity.getUniqueId());
 	}
 	
 	// -------------------
