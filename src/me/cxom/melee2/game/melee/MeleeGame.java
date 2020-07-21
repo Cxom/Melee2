@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -14,16 +15,21 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import com.trinoxtion.movement.MovementPlusPlus;
 import com.trinoxtion.movement.MovementSystem;
 
 import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.MeleeArena;
+import me.cxom.melee2.gui.melee.MeleeGUI;
 import me.cxom.melee2.player.MeleePlayer;
 import net.punchtree.minigames.game.GameState;
 import net.punchtree.minigames.game.PvpGame;
+import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.utility.collections.CirculatingList;
 import net.punchtree.minigames.utility.color.MinigameColor;
+import net.punchtree.minigames.utility.player.PlayerProfile;
 import net.punchtree.minigames.utility.player.PlayerUtils;
 
 /**
@@ -36,10 +42,14 @@ public class MeleeGame implements PvpGame, Listener {
 	// Class constants
 	public static final int POSTGAME_DURATION_SECONDS = 10;
 	
+	
+	
 	// Persistent properties
 	private final MeleeArena arena; 
 	private final CirculatingList<Location> spawns;
-	private final MovementSystem movement;
+	private final Lobby lobby;
+	private final MeleeGUI gui;
+	private final MovementSystem movement = MovementPlusPlus.CXOMS_MOVEMENT;
 	
 	// State fields
 	private GameState gamestate = GameState.WAITING;
@@ -47,11 +57,12 @@ public class MeleeGame implements PvpGame, Listener {
 	private MeleePlayer leader = null;
 	
 	
-	public MeleeGame(MeleeArena arena, MovementSystem movement){
+	public MeleeGame(MeleeArena arena){
 		this.arena = arena;
 		this.spawns = new CirculatingList<Location>(arena.getSpawns(), true);
-		this.movement = movement;
-		
+		gui = new MeleeGUI(this);
+		lobby = new Lobby(this, this::startGame, Melee.MELEE_CHAT_PREFIX);
+		new MeleeEventListeners(this);
 		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
 		
 	}
@@ -73,6 +84,10 @@ public class MeleeGame implements PvpGame, Listener {
 	
 	public MeleePlayer getLeader() {
 		return leader;
+	}
+	
+	public Lobby getLobby() {
+		return lobby;
 	}
 	
 	public String getName() {
@@ -116,17 +131,36 @@ public class MeleeGame implements PvpGame, Listener {
 			this.spawnPlayer(mp); //Spawn player before adding to movement to prevent conflicts when changing worlds
 			movement.addPlayer(player);
 			player.setInvulnerable(false);
+			
+			
 		}
 		
 		this.setGameState(GameState.RUNNING);
 		
+		gui.addPlayers(players.values());
+		
+		gui.playStart();
 	}
 	
 	private CirculatingList<MinigameColor> getPlayerColorList(){
 		return new CirculatingList<>(MinigameColor.getDefaults(), true);
 	}
 	
+	void runPostgame(MeleePlayer winner) {
+		gui.playPostgame(winner, MeleeGame.POSTGAME_DURATION_SECONDS);
+		
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				resetGame();
+			}
+		}.runTaskLater(Melee.getPlugin(), MeleeGame.POSTGAME_DURATION_SECONDS * 20);
+	}
+	
 	void resetGame() {
+		gui.reset();
+		
+		this.players.keySet().forEach(PlayerProfile::restore);
 		
 		// Remove all players (same as removePlayer)
 		this.players.keySet().forEach(movement::removePlayer);
@@ -139,14 +173,51 @@ public class MeleeGame implements PvpGame, Listener {
 		this.setGameState(GameState.WAITING);
 	}
 	
+	/**
+	 * Used for *force* stopping a game (not ending a game)
+	 */
+	public void stopGame(){
+		gui.playStop();
+		
+		resetGame();
+		lobby.removeAndRestoreAll();
+		
+		setGameState(GameState.STOPPED);
+	}
+	
 	private void addPlayer(MeleePlayer mp) {
 		players.put(mp.getPlayer().getUniqueId(), mp);
 		movement.addPlayer(mp.getPlayer());
 	}
 	
-	MeleePlayer removePlayer(Player player){
+	boolean removePlayerFromGame(Player player) {
+		
+		//Is the remove request valid?
+		if (!hasPlayer(player.getUniqueId())) return false;
+		
+		//Remove
 		movement.removePlayer(player);
-		return players.remove(player.getUniqueId());
+		players.remove(player.getUniqueId());
+		gui.removePlayer(player);
+		
+		// RESTORE STATS & LOCATION
+		PlayerProfile.restore(player);
+		
+		// End the game if it gets down to one player left.
+		if (getPlayers().size() == 1){
+			gui.playTooManyLeft();
+			resetGame();
+		}
+	
+		return true;
+	}
+	
+	boolean removePlayerFromLobby(Player player) {
+		if (lobby.hasPlayer(player)) { 		
+			lobby.removeAndRestorePlayer(player);
+			return true;
+		}
+		return false;
 	}
 	
 	void setLeader(MeleePlayer mp) {
@@ -163,24 +234,36 @@ public class MeleeGame implements PvpGame, Listener {
 	// -------------------------- //
 	
 	
-	void handleKill(MeleePlayer killer, MeleePlayer killed, EntityDamageByEntityEvent e){
+	void handleKill(Player killer, Player killed, EntityDamageByEntityEvent e){
 		
-		if (killer.equals(killed)){ //if suicide, not a kill
+		if (getGameState() != GameState.RUNNING) return;
+		
+		MeleePlayer mpKiller = getPlayer(killer.getUniqueId());
+		MeleePlayer mpKilled = getPlayer(killed.getUniqueId());
+		Location killLocation = killed.getLocation(); // GUI is updated after model, but the game will respawn the player, so we save the kill location
+		
+		if (mpKiller.equals(mpKilled)){ //if suicide, not a kill
 			handleDeath(killed, e);
 			return;
 		}
 		
 		e.setCancelled(true); //TODO Maybe refactor into cancelDamage method in MeleeKillEvent?
 		
-		killer.incrementKills();
-		if (isNewLeader(killer)){
-			this.setLeader(killer);
+		mpKiller.incrementKills();
+		if (isNewLeader(mpKiller)){
+			this.setLeader(mpKiller);
 		}
 		
-		this.spawnPlayer(killed);
+		this.spawnPlayer(mpKilled);
 		
-		if (hasWon(killer)){
-			runPostgameWithWinner(killer);
+		if (hasWon(mpKiller)){
+			runPostgameWithWinner(mpKiller);
+		}
+		
+		gui.playKill(mpKiller, mpKilled, e, killLocation);
+		
+		if (hasWinner()) { // This needs to only trigger once
+			this.runPostgame(mpKiller);
 		}
 		
 	}
@@ -194,12 +277,17 @@ public class MeleeGame implements PvpGame, Listener {
 		return player.getKills() >= this.getKillsNeededToWin();
 	}
 	
-	void handleDeath(MeleePlayer killed, EntityDamageEvent e){
+	void handleDeath(Player killed, EntityDamageEvent e){
+		MeleePlayer mpKilled = getPlayer(killed.getUniqueId());
+		Location deathLocation = killed.getLocation();
+		
 		e.setCancelled(true);
 		
 		if (!damageCauseIsProtected(e.getCause())){
 			((Player) e.getEntity()).setHealth(1);
 		}
+		
+		gui.playDeath(mpKilled, e, deathLocation);
 	}
 	
 	static boolean damageCauseIsProtected(DamageCause cause) {
@@ -243,6 +331,16 @@ public class MeleeGame implements PvpGame, Listener {
 //			if (bestSpawn.distanceSquared(otherLoc) < SPAWNING_DISTANCE_SQUARED);
 //		}
 		player.teleport(getSpawns().next());
+	}
+	
+	public void debug(Player player) {
+		player.sendMessage("Game Players: " + getPlayers().stream()
+													  .map(mp -> mp.getPlayer().getName())
+													  .collect(Collectors.toList()));
+		player.sendMessage("Game State: " + getGameState());
+		player.sendMessage("Lobby players: " + lobby.getPlayers().stream()
+													  .map(Player::getName)
+													  .collect(Collectors.toList()));
 	}
 	
 }

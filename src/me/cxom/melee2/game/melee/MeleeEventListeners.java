@@ -32,11 +32,9 @@ import me.cxom.melee2.Melee;
  */
 class MeleeEventListeners implements Listener {
 	
-	private final MeleeGameController controller; // Controller
-	private final MeleeGame game; // Model
+	private final MeleeGame game;
 	
-	MeleeEventListeners(MeleeGameController controller, MeleeGame game){
-		this.controller = controller;
+	MeleeEventListeners(MeleeGame game) {
 		this.game = game;
 		Bukkit.getPluginManager().registerEvents(this, Melee.getPlugin());
 	}
@@ -73,9 +71,9 @@ class MeleeEventListeners implements Listener {
 		}
 		
 		if (killer != null) {
-			controller.propagateKill(killer, killed, edbee);
+			game.handleKill(killer, killed, edbee);
 		} else {
-			controller.propagateDeath(killed, e); //Killed by non-entity, or an entity not in the game
+			game.handleDeath(killed, e); //Killed by non-entity, or an entity not in the game
 		}
 		
 	}
@@ -98,8 +96,8 @@ class MeleeEventListeners implements Listener {
 	
 	@EventHandler
 	public void onPlayerLeaveServer(PlayerQuitEvent e){
-		if ( ! controller.removePlayerFromGame(e.getPlayer())) {
-			 controller.removePlayerFromLobby(e.getPlayer());
+		if ( ! game.removePlayerFromGame(e.getPlayer())) {
+			 game.removePlayerFromLobby(e.getPlayer());
 		}
 	}
 	
@@ -108,7 +106,7 @@ class MeleeEventListeners implements Listener {
 	@EventHandler
 	public void onMeleeLeaveCommand(PlayerCommandPreprocessEvent e) {
 		if (! e.getMessage().startsWith("/melee leave")) return;
-		if (controller.removePlayerFromGame(e.getPlayer()) || controller.removePlayerFromLobby(e.getPlayer())){
+		if (game.removePlayerFromGame(e.getPlayer()) || game.removePlayerFromLobby(e.getPlayer())){
 			e.setCancelled(true); //Prevents normal command execution
 		}
 	}
@@ -169,7 +167,7 @@ class MeleeEventListeners implements Listener {
 	public void onPlayerCommandPreprocessEvent(PlayerCommandPreprocessEvent e) {
 		Player player = e.getPlayer();
 		String command = e.getMessage().toLowerCase() + " ";
-		if ((game.hasPlayer(player) || controller.getLobby().hasPlayer(player))
+		if ((game.hasPlayer(player) || game.getLobby().hasPlayer(player))
 		 && ! player.isOp()
 		 && ! cmds.contains(command.split(" ")[0])
 		 && ! command.toLowerCase().startsWith("/melee leave")) {
