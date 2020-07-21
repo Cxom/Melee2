@@ -22,10 +22,8 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import me.cxom.melee2.Melee;
-import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.gui.rabbit.RabbitGUI;
 import me.cxom.melee2.player.RabbitPlayer;
 import net.punchtree.minigames.game.GameState;
@@ -36,15 +34,11 @@ import net.punchtree.minigames.game.GameState;
  * as appropriate.
  */
 class RabbitEventListeners implements Listener {
+
+	private final RabbitGame game;
 	
-	private final RabbitGameController controller; // Controller
-	private final RabbitGame game; // Model
-	private final RabbitGUI gui;
-	
-	RabbitEventListeners(RabbitGameController controller, RabbitGame game, RabbitGUI gui){
-		this.controller = controller;
+	RabbitEventListeners(RabbitGame game){
 		this.game = game;
-		this.gui = gui;
 		Bukkit.getPluginManager().registerEvents(this, Melee.getPlugin());
 	}
 	
@@ -88,47 +82,14 @@ class RabbitEventListeners implements Listener {
 		}
 		
 		if (killer != null) {
-			propagateKill(killer, killed, edbee);
+			game.handleKill(killer, killed, edbee);
 		} else {
-			propagateDeath(killed, e); //Killed by not an entity, or an entity not in the game
+			game.handleDeath(killed, e); //Killed by not an entity, or an entity not in the game
 		}
 		
 	}
 	
-	private void propagateKill(Player killer, Player killed, EntityDamageByEntityEvent edbee) {
-		
-		if (game.getGameState() != GameState.RUNNING) return;
-		
-		RabbitPlayer mpKiller = game.getPlayer(killer.getUniqueId());
-		RabbitPlayer mpKilled = game.getPlayer(killed.getUniqueId());
-		Location killLocation = killed.getLocation(); // GUI is updated after model, but the game will respawn the player, so we save the kill location
-		game.handleKill(mpKiller, mpKilled, edbee);
-		gui.playKill(mpKiller, mpKilled, edbee, killLocation);
-		
-//		if (game.hasWinner()) { // This needs to only trigger once
-//			propogateWin(mpKiller);
-//		};
-	}
 	
-	private void propogateWin(RabbitPlayer winner) {
-		gui.playPostgame(winner, MeleeGame.POSTGAME_DURATION_SECONDS);
-		
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				game.resetGame();
-			}
-		}.runTaskLater(Melee.getPlugin(), MeleeGame.POSTGAME_DURATION_SECONDS * 20);
-	}
-	
-	private void propagateDeath(Player killed, EntityDamageEvent e) {
-		
-		RabbitPlayer mpKilled = game.getPlayer(killed.getUniqueId());
-		Location deathLocation = killed.getLocation();
-		game.handleDeath(mpKilled, e);
-		gui.playDeath(mpKilled, e, deathLocation);
-		
-	}
 	
 	
 	
@@ -137,8 +98,8 @@ class RabbitEventListeners implements Listener {
 	
 		@EventHandler
 		public void onPlayerLeaveServer(PlayerQuitEvent e){
-			if ( ! controller.removePlayerFromGame(e.getPlayer())) {
-				 controller.removePlayerFromLobby(e.getPlayer());
+			if ( ! game.removePlayerFromGame(e.getPlayer())) {
+				 game.removePlayerFromLobby(e.getPlayer());
 			}
 		}
 		
@@ -147,7 +108,7 @@ class RabbitEventListeners implements Listener {
 		@EventHandler
 		public void onMeleeLeaveCommand(PlayerCommandPreprocessEvent e) {
 			if (! e.getMessage().startsWith("/melee leave")) return;
-			if (controller.removePlayerFromGame(e.getPlayer()) || controller.removePlayerFromLobby(e.getPlayer())){
+			if (game.removePlayerFromGame(e.getPlayer()) || game.removePlayerFromLobby(e.getPlayer())){
 				e.setCancelled(true); //Prevents normal command execution
 			}
 		}
@@ -208,7 +169,7 @@ class RabbitEventListeners implements Listener {
 		public void onPlayerCommandPreprocessEvent(PlayerCommandPreprocessEvent e) {
 			Player player = e.getPlayer();
 			String command = e.getMessage().toLowerCase() + " ";
-			if ((game.hasPlayer(player) || controller.getLobby().hasPlayer(player))
+			if ((game.hasPlayer(player) || game.getLobby().hasPlayer(player))
 			 && ! player.isOp()
 			 && ! cmds.contains(command.split(" ")[0])
 			 && ! command.toLowerCase().startsWith("/melee leave")) {

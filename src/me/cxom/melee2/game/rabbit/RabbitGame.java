@@ -6,9 +6,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -16,15 +16,12 @@ import org.bukkit.Material;
 import org.bukkit.block.Banner;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
-import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -37,9 +34,11 @@ import com.trinoxtion.movement.MovementSystem;
 import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.RabbitArena;
 import me.cxom.melee2.game.melee.MeleeGame;
+import me.cxom.melee2.gui.rabbit.RabbitGUI;
 import me.cxom.melee2.player.RabbitPlayer;
 import net.punchtree.minigames.game.GameState;
 import net.punchtree.minigames.game.PvpGame;
+import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.utility.collections.CirculatingList;
 import net.punchtree.minigames.utility.color.MinigameColor;
 import net.punchtree.minigames.utility.player.InventoryUtils;
@@ -58,18 +57,17 @@ public class RabbitGame implements PvpGame, Listener {
 	public static final int POSTGAME_DURATION_SECONDS = 10;
 	
 	// Persistent properties
-	private final MovementSystem movement;
-	
 	private final RabbitArena arena; //Model
 	private final CirculatingList<Location> spawns;
 	private final Location flagSpawnLocation;
+	private final Lobby lobby;
+	private final RabbitGUI gui;
+	private final MovementSystem movement = MovementPlusPlus.CXOMS_MOVEMENT;
 	
 	// Flag constants
 	private final int firstFlagSpawnDelay = 15; // seconds
-	
 	private final double flagPickupRadius = 1.5;
 	private final int flagTaskRate = 5;
-	
 	private final int timeToWin;
 	
 	// State fields
@@ -99,6 +97,17 @@ public class RabbitGame implements PvpGame, Listener {
 	private Location droppedFlagLocation = null;
 	//-----------------
 	
+	public RabbitGame(RabbitArena arena){
+		this.arena = arena;
+		this.spawns = new CirculatingList<>(arena.getSpawns(), true);
+		this.flagSpawnLocation = arena.getCenterpoint();
+		this.timeToWin = Math.round(arena.getFlagTimeToWin() * (20f / flagTaskRate));
+		this.gui = new RabbitGUI(this);
+		this.lobby = new Lobby(this, this::startGame, Melee.RABBIT_CHAT_PREFIX);
+		new RabbitEventListeners(this);
+		
+		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
+	}
 	
 	// Flag task
 	private BukkitTask flagTask;
@@ -137,17 +146,6 @@ public class RabbitGame implements PvpGame, Listener {
 			flagTask = null;
 		}
 	}
-	
-	public RabbitGame(RabbitArena arena, MovementSystem movement){
-		this.arena = arena;
-		this.spawns = new CirculatingList<>(arena.getSpawns(), true);
-		this.flagSpawnLocation = arena.getCenterpoint();
-		this.timeToWin = Math.round(arena.getFlagTimeToWin() * (20f / flagTaskRate));
-		
-		this.movement = movement;
-		
-		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
-	}
 
 
 	
@@ -176,6 +174,10 @@ public class RabbitGame implements PvpGame, Listener {
 	
 	public GameState getGameState(){
 		return gamestate; 
+	}
+	
+	public Lobby getLobby() {
+		return lobby;
 	}
 	
 	public int getTimeToWin() {
@@ -247,6 +249,10 @@ public class RabbitGame implements PvpGame, Listener {
 		notifyGameStart();
 		
 		doInitialFlagSpawn();
+		
+		gui.addPlayers(getPlayers());
+		
+		gui.playStart();
 	}
 	
 	private void doInitialFlagSpawn() {
@@ -291,6 +297,18 @@ public class RabbitGame implements PvpGame, Listener {
 		this.spawns.resetIterator();
 	}
 	
+	/**
+	 * Used for *force* stopping a game (not regular game ending by a win)
+	 */
+	public void stopGame(){
+		gui.playStop();
+		
+		resetGame();
+		lobby.removeAndRestoreAll();
+		
+		setState(GameState.STOPPED);
+	}
+	
 	void addPlayer(RabbitPlayer rp) {
 		players.put(rp.getPlayer().getUniqueId(), rp);
 		movement.addPlayer(rp.getPlayer());
@@ -306,12 +324,35 @@ public class RabbitGame implements PvpGame, Listener {
 	 * @param player
 	 * @return The player removed (or null, if the player was not in the game)
 	 */
-	RabbitPlayer removePlayer(Player player){
+	boolean removePlayerFromGame(Player player) {
 		//TODO maybe send message if player still in 
 		
-		// Reverse of add
+		//Is the remove request valid?
+		if (!hasPlayer(player.getUniqueId())) return false;
+		
+		// Reverse order of how added
 		movement.removePlayer(player);
-		return players.remove(player.getUniqueId());
+		players.remove(player.getUniqueId());
+		gui.removePlayer(player);
+		
+		// RESTORE STATS & LOCATION
+		PlayerProfile.restore(player);
+		
+		// End the game if it gets down to one left.
+		if (getPlayers().size() == 1){
+			gui.playTooManyLeft();
+			resetGame();
+		}
+	
+		return true;
+	}
+	
+	boolean removePlayerFromLobby(Player player) {
+		//Is the remove request valid?
+		if (!lobby.hasPlayer(player)) return false;
+		
+		lobby.removeAndRestorePlayer(player);
+		return true;	
 	}
 	
 	private void setFlagStatus(FlagStatus status) {
@@ -374,6 +415,7 @@ public class RabbitGame implements PvpGame, Listener {
 		InventoryUtils.equipPlayer(rp.getPlayer(), rp.getColor());
 	}
 	
+	// TODO all events outside this class?
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent e) {
 		if (! players.containsKey(e.getPlayer().getUniqueId())) return;
@@ -446,10 +488,16 @@ public class RabbitGame implements PvpGame, Listener {
 	// ---- EVENT RESPONDERS ---- //
 	// -------------------------- //
 	
-	void handleKill(RabbitPlayer killer, RabbitPlayer killed, EntityDamageByEntityEvent e){
+	void handleKill(Player killer, Player killed, EntityDamageByEntityEvent e){
+		
+		if (getGameState() != GameState.RUNNING) return;
+		
+		RabbitPlayer rpKiller = getPlayer(killer.getUniqueId());
+		RabbitPlayer rpKilled = getPlayer(killed.getUniqueId());
+		Location killLocation = killed.getLocation(); // GUI is updated after model, but the game will respawn the player, so we save the kill location
 		
 		//if suicide, not a kill
-		if (killer.equals(killed)){
+		if (rpKiller.equals(rpKilled)){
 			handleDeath(killed, e);
 			return;
 		}
@@ -457,26 +505,31 @@ public class RabbitGame implements PvpGame, Listener {
 		//cancel damage
 		e.setCancelled(true); //TODO Maybe refactor into cancelDamage method in MeleeKillEvent?
 		
-		killer.incrementKills();
+		rpKiller.incrementKills();
 		
-		if (killed.equals(this.flagHolder)) { //May need to move this after spawning if the dead player still
+		if (rpKilled.equals(this.flagHolder)) { //May need to move this after spawning if the dead player still
 												// picks up the dropped flag
-			this.dropFlag(killed.getPlayer().getLocation());
+			this.dropFlag(rpKilled.getPlayer().getLocation());
 			
 		}
 		
-		this.spawnPlayer(killed);
+		this.spawnPlayer(rpKilled);
 		
+		gui.playKill(rpKiller, rpKilled, e, killLocation);
 	}
 	
-	void handleDeath(RabbitPlayer killed, EntityDamageEvent e){
+	void handleDeath(Player killed, EntityDamageEvent e){
+		RabbitPlayer rpKilled = getPlayer(killed.getUniqueId());
+		Location deathLocation = killed.getLocation();
+		
 		e.setCancelled(true);
 		//Let player take non-fatal damage that isn't caused by a fall or firework explosion
 		if (e.getCause() != DamageCause.FALL && e.getCause() != DamageCause.ENTITY_EXPLOSION){
 			((Player) e.getEntity()).setHealth(1);
 		}
+
+		gui.playDeath(rpKilled, e, deathLocation);
 	}
-	
 	
 	// Runs the end of the game
 	private void runPostgameWithWinner(RabbitPlayer winner) {
@@ -530,6 +583,16 @@ public class RabbitGame implements PvpGame, Listener {
 		//Fall Damage is off so movement system is non lethal
 		//Entity Explosion is off to prevent firework damage from kills
 		return cause == DamageCause.FALL || cause == DamageCause.ENTITY_EXPLOSION;
+	}
+	
+	public void debug(Player player) {
+		player.sendMessage("Game Players: " + getPlayers().stream()
+													  .map(mp -> mp.getPlayer().getName())
+													  .collect(Collectors.toList()));
+		player.sendMessage("Game State: " + getGameState());
+		player.sendMessage("Lobby players: " + lobby.getPlayers().stream()
+													  .map(Player::getName)
+													  .collect(Collectors.toList()));
 	}
 	
 	// -------------------
