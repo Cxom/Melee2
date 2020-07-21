@@ -3,20 +3,15 @@ package me.cxom.melee2;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.arena.configuration.MeleeAndRabbitArenaLoader;
 import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.game.melee.MeleeGameController;
-import me.cxom.melee2.gui.menu.MeleeMenu;
+import me.cxom.melee2.gui.menu.MinigameMenu;
 import net.punchtree.minigames.arena.creation.ArenaManager;
-import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.lobby.Lobby;
 
 public class MeleeGameManager {
@@ -27,6 +22,8 @@ public class MeleeGameManager {
 //	public static MeleeGameManager getManager(){
 //		return instance;
 //	}
+	
+	static ArenaManager<MeleeArena> meleeArenaManager;
 	
 	//The controllers should NEVER be exposed outside this class
 	private static Map<String, MeleeGameController> controllers = new HashMap<>();
@@ -42,6 +39,8 @@ public class MeleeGameManager {
 	
 	private static final String MENU_NAME = "Melee Games";
 	
+	private static MinigameMenu menu;
+	
 	/*****************************************/
 	
 	//TODO Should this take a string arg? Any usefulness? Speculative?
@@ -53,7 +52,7 @@ public class MeleeGameManager {
 	}
 	
 	public static void createAllGames() {
-		ArenaManager<MeleeArena> meleeArenaManager = new ArenaManager<>(Melee.meleeArenaFolder, MeleeAndRabbitArenaLoader::loadMeleeArena);
+		meleeArenaManager = new ArenaManager<>(Melee.meleeArenaFolder, MeleeAndRabbitArenaLoader::loadMeleeArena);
 		meleeArenaManager.loadArenas();
 		meleeArenaManager.getArenas().forEach(MeleeGameManager::createGame);
 	}
@@ -67,12 +66,15 @@ public class MeleeGameManager {
 		if (! hasLobby(lobbyName)) throw new AssertionError("There is no game with the name " + lobbyName + " !");
 		
 		getLobby(lobbyName).addPlayerIfPossible(player);
+		menu.refresh();
 		
 		//TODO
 		return true;
 	}
 	
-	
+	private static void createMenu() {
+		menu = new MinigameMenu(MENU_NAME, lobbies.values());
+	}
 	
 	public static boolean hasGame(String game) {
 		return models.containsKey(game);
@@ -90,16 +92,20 @@ public class MeleeGameManager {
 		return lobbies.values();
 	}
 	
-	public static Inventory getMenu() {
-		return MeleeMenu.createMenu(getLobbyList());
+	public static void showMenuTo(Player player) {
+		if (menu == null) {
+			createMenu();
+		}
+		menu.showTo(player);
 	}
 	
-	public static Inventory getMenu(Predicate<PvpGame> filter) {
-		Set<Lobby> lobbies = getLobbyList().stream()
-											   .filter(lobby -> filter.test(lobby.getGame()))
-											   .collect(Collectors.toSet());
-		return MeleeMenu.createMenu(lobbies);
-	}
+	// We can reenable this if we actually need it
+//	public static Inventory getMenu(Predicate<PvpGame> filter) {
+//		Set<Lobby> lobbies = getLobbyList().stream()
+//											   .filter(lobby -> filter.test(lobby.getGame()))
+//											   .collect(Collectors.toSet());
+//		return MeleeMenu.createMenu(lobbies);
+//	}
 
 	public static void debugGame(String game, Player player) {
 		getController(game).debug(player);

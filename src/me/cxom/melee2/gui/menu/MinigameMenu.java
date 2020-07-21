@@ -22,35 +22,25 @@ import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.lobby.Lobby;
 
 public class MinigameMenu implements Listener {
-
-	private static boolean eventsRegistered = false;
 	
 	private final String menuName;
-	
 	private List<Lobby> lobbies;
+	
+	private final Inventory menu;
 	
 	public MinigameMenu(String menuName, Collection<Lobby> lobbies) {
 		//this.gameManager = gameManager;
 		this.menuName = menuName;
 		this.lobbies = new ArrayList<Lobby>(lobbies);
-		//FIXME don't do this jank - it doesn't work
-		if (!eventsRegistered) {
-			Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
-			eventsRegistered = true;
-		}
+		
+		this.menu = Bukkit.createInventory(null, (lobbies.size() / 9 + 1) * 9, menuName); 
+		constructMenu();
+		
+		// Will this leak memory? - Regardless, menu objects are meant to be SAVED AND REUSED
+		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
 	}
 	
-//	public static final String title = "Melee Games";
-	
-	public static Inventory createMenu(String menuName, List<Lobby> lobbyList) {
-		return new MinigameMenu(menuName, lobbyList).get();
-	}
-	
-	public Inventory get(){
-		
-//		new MinigameMenu(menuName);
-		
-		Inventory menu = Bukkit.createInventory(null, (lobbies.size() / 9 + 1) * 9, menuName); 
+	private void constructMenu(){
 		
 		int slotIndex = 0;
 		for (Lobby lobby : lobbies){
@@ -68,7 +58,19 @@ public class MinigameMenu implements Listener {
 			
 			slotIndex++;
 		}
-		return menu;
+	}
+	
+	public void refresh() {
+		// TODO - change inventory size if a new lobby is added - when doing this, make sure this lobby never overflows (iteration limit)
+		Bukkit.broadcastMessage("Refreshing Menu");
+		menu.clear();
+		constructMenu();
+		Bukkit.broadcastMessage(ChatColor.GRAY + "Refreshed Menu");
+	}
+	
+	public void showTo(Player player) {
+		refresh();
+		player.openInventory(menu);
 	}
 	
 	@EventHandler
@@ -89,7 +91,7 @@ public class MinigameMenu implements Listener {
 //				gameManager.addPlayerToGameLobby(gameName, (Player) e.getWhoClicked());
 				
 				playerToAdd.closeInventory();
-					
+				refresh();
 			}
 		}
 	}

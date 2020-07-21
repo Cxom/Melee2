@@ -72,6 +72,7 @@ public class RabbitGUI implements RabbitGameObserver {
 		Player player = mp.getPlayer();
 		
 		players.add(player);
+		player.setScoreboard(scoreboard);
 		bossbar.addPlayer(player);
 		tablist.addPlayer(mp);
 	}
@@ -85,6 +86,7 @@ public class RabbitGUI implements RabbitGameObserver {
 		player.sendMessage(Melee.RABBIT_CHAT_PREFIX + ChatColor.RED + "" + ChatColor.ITALIC
 				+ "Removing you from " + game.getArena().getName() + " . . .");
 		
+		player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 		players.remove(player);
 		bossbar.removePlayer(player);
 		tablist.removePlayer(player);
@@ -188,6 +190,7 @@ public class RabbitGUI implements RabbitGameObserver {
 	
 	private void reset() {
 		// TODO change all these to use suppliers?
+		players.forEach(player -> player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard()));
 		players.clear();
 		bossbar.removeAll();
 		tablist.removeAll();

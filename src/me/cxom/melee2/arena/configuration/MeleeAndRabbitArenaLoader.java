@@ -1,12 +1,10 @@
 package me.cxom.melee2.arena.configuration;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
@@ -45,6 +43,37 @@ public class MeleeAndRabbitArenaLoader extends ArenaLoader {
 		
 		return new MeleeArena(name, pregameLobby, playersToStart, spawns, killsToEnd);
 	};
+	
+	private static int spawnCounter = 1;
+	
+	public static void convertMeleeArena(Location relative, MeleeArena meleeArena, FileConfiguration arenacfg) {
+		arenacfg.set("name", meleeArena.getName());
+		
+		arenacfg.set("world", meleeArena.getSpawns().get(0).getWorld().getName());
+		
+		ConfigurationSection spawnsSec = arenacfg.createSection("spawns");
+		
+		spawnCounter = 1;
+		meleeArena.getSpawns().stream().map((Location l) -> { return l.subtract(relative); }).forEach((Location l) -> {
+			ConfigurationSection spawnSec = spawnsSec.createSection(String.valueOf(spawnCounter));
+			setLocation(spawnSec, l);
+			++spawnCounter;
+		}) ;
+		
+		ConfigurationSection lobbySec = arenacfg.createSection("lobby");
+		setLocation(lobbySec, meleeArena.getPregameLobby().subtract(relative));
+		
+		ConfigurationSection relativeSec = arenacfg.createSection("relative");
+		setLocation(relativeSec, relative);
+	}
+	
+	public static void setLocation(ConfigurationSection section, Location location) {
+		section.set("x", location.getX());
+		section.set("y", location.getY());
+		section.set("z", location.getZ());
+		section.set("yaw", location.getPitch());
+		section.set("pitch", location.getYaw());
+	}
 	
 	public static RabbitArena loadRabbitArena(FileConfiguration arenacfg) {
 		String name = arenacfg.getString("name");

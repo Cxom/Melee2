@@ -1,21 +1,25 @@
 package me.cxom.melee2;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import me.cxom.melee2.gui.menu.MeleeMenu;
+import me.cxom.melee2.arena.MeleeArena;
+import me.cxom.melee2.arena.configuration.MeleeAndRabbitArenaLoader;
 import me.cxom.melee2.gui.menu.MinigameMenu;
-import me.cxom.melee2.gui.menu.RabbitMenu;
 import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.utility.player.InventoryUtils;
 import net.punchtree.minigames.utility.player.PlayerProfile;
@@ -33,6 +37,8 @@ public class Melee extends JavaPlugin {
 	static File meleeArenaFolder;
 	static File rabbitArenaFolder;
 	
+	private MinigameMenu allLobbiesMenu;
+	
 	@Override
 	public void onEnable(){
 		
@@ -42,8 +48,7 @@ public class Melee extends JavaPlugin {
 		rabbitArenaFolder = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "RabbitArenas");
 
 		// Register Events
-		Bukkit.getServer().getPluginManager().registerEvents(new MeleeMenu(), getPlugin());
-		Bukkit.getServer().getPluginManager().registerEvents(new RabbitMenu(), getPlugin());
+		// - None global right now
 		
 		// Load arenas and create a game for each
 		
@@ -58,6 +63,10 @@ public class Melee extends JavaPlugin {
 		RabbitGameManager.getGamesList().forEach(a -> System.out.print(a.getName()+ " "));
 		System.out.println();
 	
+		List<Lobby> allLobbies = new ArrayList<Lobby>();
+		allLobbies.addAll(MeleeGameManager.getLobbyList());
+		allLobbies.addAll(RabbitGameManager.getLobbyList());
+		allLobbiesMenu = new MinigameMenu("All Games", allLobbies);
 	}
 	
 
@@ -74,19 +83,16 @@ public class Melee extends JavaPlugin {
 			if (! (sender instanceof Player)) return true;
 			Player player = (Player) sender;
 			
-			player.openInventory(RabbitGameManager.getMenu());			
+			RabbitGameManager.showMenuTo(player);	
+			return true;
 		}
 		
 		if (label.equalsIgnoreCase("games") || label.equalsIgnoreCase("join")) {
 			if (! (sender instanceof Player)) return true;
 			Player player = (Player) sender;
 			
-			List<Lobby> allLobbies = new ArrayList<Lobby>();
-			allLobbies.addAll(MeleeGameManager.getLobbyList());
-			allLobbies.addAll(RabbitGameManager.getLobbyList());
-			
-			Inventory allLobbiesMenu = MinigameMenu.createMenu("All Games", allLobbies);
-			player.openInventory(allLobbiesMenu);
+			allLobbiesMenu.showTo(player);
+			return true;
 		}
 		
 		if ( ! label.equalsIgnoreCase("melee")) return true;
@@ -114,7 +120,16 @@ public class Melee extends JavaPlugin {
 				}
 				return true;
 				
-				
+		    case "convert":
+		    	if (args.length == 2) {
+		    		String arenaName = args[1];
+		    		MeleeArena meleeArena = MeleeGameManager.meleeArenaManager.getArena(arenaName);
+		    		if (arenaName != null) {
+		    			convertMeleeArena(player.getLocation().getBlock().getLocation(), meleeArena);
+		    			player.sendMessage(ChatColor.GREEN + "" + ChatColor.ITALIC + "Converted " + arenaName);
+		    		}
+		    	}
+		    	return true;
 			// debug commands
 		    case "backup":
 				InventoryUtils.backupInventory(player);
@@ -142,9 +157,29 @@ public class Melee extends JavaPlugin {
 			return true;
 		}
 		
-		((Player) sender).openInventory(MeleeGameManager.getMenu());
+		MeleeGameManager.showMenuTo((Player) sender);
 		
 		return true;
+	}
+	
+	private static void convertMeleeArena(Location relative, MeleeArena meleeArena) {
+		File arenaf = new File(meleeArenaFolder + File.separator + meleeArena.getName() + "-relative" + ".yml");
+		
+		try {
+			if (! arenaf.exists()) {
+				arenaf.createNewFile();
+			}
+			FileConfiguration arenacfg = new YamlConfiguration();
+			
+			arenacfg.load(arenaf);
+			
+			MeleeAndRabbitArenaLoader.convertMeleeArena(relative, meleeArena, arenacfg);
+			
+			arenacfg.save(arenaf);
+			
+		} catch (IOException | InvalidConfigurationException e) {
+			e.printStackTrace();
+		}
 	}
 	
 //	public static MeleeGame getGame(String name){

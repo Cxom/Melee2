@@ -221,6 +221,8 @@ public class MeleeGame implements PvpGame, Listener {
 	}
 	
 	
+	private final double SPAWNING_DISTANCE = 12;
+	private final double SPAWNING_DISTANCE_SQUARED = SPAWNING_DISTANCE * SPAWNING_DISTANCE;
 	/**
 	 * Resets a player's stats and teleports them to a spawn
 	 * @param mp The player
@@ -229,6 +231,17 @@ public class MeleeGame implements PvpGame, Listener {
 		Player player = mp.getPlayer();
 		
 		PlayerUtils.perfectStats(player);
+	
+		// TODO FINISH BEST SPAWN LOGIC
+		
+//		Location bestSpawn = getSpawns().next();
+//		double bestDistance = SPAWNING_DISTANCE_SQUARED;
+//		for ()
+//		for (MeleePlayer otherPlayer : players.values()) {
+//			Location otherLoc = otherPlayer.getPlayer().getLocation();
+//			if (otherLoc.getWorld() != bestSpawn.getWorld()) continue;
+//			if (bestSpawn.distanceSquared(otherLoc) < SPAWNING_DISTANCE_SQUARED);
+//		}
 		player.teleport(getSpawns().next());
 	}
 	
