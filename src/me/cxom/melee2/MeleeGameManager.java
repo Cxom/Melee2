@@ -9,7 +9,6 @@ import org.bukkit.entity.Player;
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.arena.configuration.MeleeAndRabbitArenaLoader;
 import me.cxom.melee2.game.melee.MeleeGame;
-import me.cxom.melee2.game.melee.MeleeGameController;
 import me.cxom.melee2.gui.menu.MinigameMenu;
 import net.punchtree.minigames.arena.creation.ArenaManager;
 import net.punchtree.minigames.lobby.Lobby;
@@ -24,10 +23,6 @@ public class MeleeGameManager {
 //	}
 	
 	static ArenaManager<MeleeArena> meleeArenaManager;
-	
-	//The controllers should NEVER be exposed outside this class
-	private static Map<String, MeleeGameController> controllers = new HashMap<>();
-	private static MeleeGameController getController(String game) { return controllers.get(game); }
 	
 	//The models can be exposed
 	private static Map<String, MeleeGame> models = new HashMap<>();
@@ -45,10 +40,9 @@ public class MeleeGameManager {
 	
 	//TODO Should this take a string arg? Any usefulness? Speculative?
 	private static void createGame(MeleeArena arena) {
-		MeleeGameController controller = new MeleeGameController(arena);
-		controllers.put(arena.getName(), controller);
-		models.put(arena.getName(), controller.getGame());
-		lobbies.put(arena.getName(), controller.getLobby());
+		MeleeGame game = new MeleeGame(arena);
+		models.put(arena.getName(), game);
+		lobbies.put(arena.getName(), game.getLobby());
 	}
 	
 	public static void createAllGames() {
@@ -58,7 +52,7 @@ public class MeleeGameManager {
 	}
 	
 	public static void stopAllGames() {
-		controllers.values().forEach(MeleeGameController::stopGame);
+		models.values().forEach(MeleeGame::stopGame);
 	}
 	
 	public static boolean addPlayerToGameLobby(String lobbyName, Player player) {
@@ -108,7 +102,7 @@ public class MeleeGameManager {
 //	}
 
 	public static void debugGame(String game, Player player) {
-		getController(game).debug(player);
+		getGame(game).debug(player);
 	}
 
 	public static void debugGamesList(Player player) {
