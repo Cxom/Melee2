@@ -164,6 +164,7 @@ public class MeleeGUI {
 	}
 
 	public void reset() {
+		players.forEach(player -> player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard()));
 		players.clear();
 		bossbar.removeAll();
 		tablist.removeAll();

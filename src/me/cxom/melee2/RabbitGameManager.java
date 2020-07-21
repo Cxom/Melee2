@@ -3,20 +3,15 @@ package me.cxom.melee2;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 
 import me.cxom.melee2.arena.RabbitArena;
 import me.cxom.melee2.arena.configuration.MeleeAndRabbitArenaLoader;
 import me.cxom.melee2.game.rabbit.RabbitGame;
 import me.cxom.melee2.game.rabbit.RabbitGameController;
-import me.cxom.melee2.gui.menu.RabbitMenu;
+import me.cxom.melee2.gui.menu.MinigameMenu;
 import net.punchtree.minigames.arena.creation.ArenaManager;
-import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.lobby.Lobby;
 
 public class RabbitGameManager {
@@ -42,6 +37,8 @@ public class RabbitGameManager {
 	
 	
 	private static final String MENU_NAME = "Rabbit Games";
+	
+	private static MinigameMenu menu;
 	
 	/*****************************************/
 	
@@ -73,7 +70,9 @@ public class RabbitGameManager {
 		return true;
 	}
 	
-	
+	private static void createMenu() {
+		menu = new MinigameMenu(MENU_NAME, lobbies.values());
+	}
 	
 	public static boolean hasGame(String game) {
 		return models.containsKey(game);
@@ -91,16 +90,20 @@ public class RabbitGameManager {
 		return lobbies.values();
 	}
 	
-	public static Inventory getMenu() {
-		return RabbitMenu.createMenu(getLobbyList());
+	public static void showMenuTo(Player player) {
+		if (menu == null) {
+			createMenu();
+		}
+		menu.showTo(player);
 	}
 	
-	public static Inventory getMenu(Predicate<PvpGame> filter) {
-		Set<Lobby> lobbies = getLobbyList().stream()
-											   .filter(lobby -> filter.test(lobby.getGame()))
-											   .collect(Collectors.toSet());
-		return RabbitMenu.createMenu(lobbies);
-	}
+	// We can reenable this if we actually need it
+//	public static Inventory getMenu(Predicate<PvpGame> filter) {
+//		Set<Lobby> lobbies = getLobbyList().stream()
+//											   .filter(lobby -> filter.test(lobby.getGame()))
+//											   .collect(Collectors.toSet());
+//		return RabbitMenu.createMenu(lobbies);
+//	}
 
 	public static void debugGame(String game, Player player) {
 		getController(game).debug(player);
