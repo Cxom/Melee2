@@ -7,11 +7,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -37,7 +35,7 @@ import net.punchtree.minigames.utility.player.PlayerUtils;
  * The game object is persistent across games
  * @author Cxom
  */
-public class MeleeGame implements PvpGame, Listener {
+public class MeleeGame implements PvpGame {
 	
 	// Class constants
 	public static final int POSTGAME_DURATION_SECONDS = 10;
@@ -63,8 +61,6 @@ public class MeleeGame implements PvpGame, Listener {
 		gui = new MeleeGUI(this);
 		lobby = new Lobby(this, this::startGame, Melee.MELEE_CHAT_PREFIX);
 		new MeleeEventListeners(this);
-		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
-		
 	}
 
 	// -------------------------- //
@@ -174,7 +170,7 @@ public class MeleeGame implements PvpGame, Listener {
 	}
 	
 	/**
-	 * Used for *force* stopping a game (not ending a game)
+	 * Used for *force* stopping a game (not regular game ending by a win)
 	 */
 	public void stopGame(){
 		gui.playStop();
