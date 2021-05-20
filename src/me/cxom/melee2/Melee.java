@@ -19,8 +19,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.arena.configuration.MeleeAndRabbitArenaLoader;
-import me.cxom.melee2.gui.menu.MinigameMenu;
 import net.punchtree.minigames.lobby.Lobby;
+import net.punchtree.minigames.menu.MinigameMenu;
 import net.punchtree.minigames.utility.player.InventoryUtils;
 import net.punchtree.minigames.utility.player.PlayerProfile;
 
@@ -44,8 +44,8 @@ public class Melee extends JavaPlugin {
 		
 		// Initialize plugin stuff
 		plugin = this;
-		meleeArenaFolder = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "Arenas");
-		rabbitArenaFolder = new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "RabbitArenas");
+		meleeArenaFolder = new File(getDataFolder().getAbsolutePath() + File.separator + "Arenas");
+		rabbitArenaFolder = new File(getDataFolder().getAbsolutePath() + File.separator + "RabbitArenas");
 
 		// Register Events
 		// - None global right now

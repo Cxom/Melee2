@@ -151,7 +151,7 @@ public class MeleeGUI {
 					this.cancel();
 				}
 			}
-		}.runTaskTimer(Melee.getPlugin(), 10, 30);
+		}.runTaskTimer(Melee.getPlugin(Melee.class), 10, 30);
 		
 	}
 	

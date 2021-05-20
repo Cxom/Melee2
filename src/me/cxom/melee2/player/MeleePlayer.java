@@ -7,18 +7,18 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import net.punchtree.minigames.utility.color.ColoredPlayer;
-import net.punchtree.minigames.utility.color.MinigameColor;
 import net.punchtree.minigames.utility.player.InventoryUtils;
+import net.punchtree.util.color.PunchTreeColor;
 
 public class MeleePlayer implements ColoredPlayer {
 
 	private final UUID uuid;
 	
-	private final MinigameColor color;
+	private final PunchTreeColor color;
 	
 	private int kills = 0;
 	
-	public MeleePlayer(Player player, MinigameColor color){
+	public MeleePlayer(Player player, PunchTreeColor color){
 		this.uuid = player.getUniqueId();
 		this.color = color;
 		
@@ -34,7 +34,7 @@ public class MeleePlayer implements ColoredPlayer {
 		return Bukkit.getPlayer(uuid);
 	}
 	
-	public MinigameColor getColor(){
+	public PunchTreeColor getColor(){
 		return color;
 	}
 	

@@ -29,6 +29,8 @@ import net.punchtree.minigames.gui.Killfeed;
 
 public class RabbitGUI implements RabbitGameObserver {
 
+	// TODO we have enough plugin references that we should probably just have the plugin object (definitely in the game anyway)
+	
 	/*
 	 * List of features:
 	 *  = Chat
@@ -111,7 +113,7 @@ public class RabbitGUI implements RabbitGameObserver {
 					this.cancel();
 				}
 			}
-		}.runTaskTimerAsynchronously(Melee.getPlugin(), 20 * nowPlayingMessageDuration, 20);
+		}.runTaskTimerAsynchronously(Melee.getPlugin(Melee.class), 20 * nowPlayingMessageDuration, 20);
 		
 		game.getPlayers().forEach(mp -> {
 			Player player = mp.getPlayer();
@@ -135,7 +137,7 @@ public class RabbitGUI implements RabbitGameObserver {
 //			bossbar.setTier(killer);
 //		}
 		
-		tablist.updatePlayer(killer);
+//		tablist.updatePlayer(killer);
 		
 		
 		//Send chat messages
@@ -171,7 +173,7 @@ public class RabbitGUI implements RabbitGameObserver {
 					this.cancel();
 				}
 			}
-		}.runTaskTimer(Melee.getPlugin(), 10, 30);
+		}.runTaskTimer(Melee.getPlugin(Melee.class), 10, 30);
 		
 	}
 	
@@ -246,6 +248,7 @@ public class RabbitGUI implements RabbitGameObserver {
 				return;
 			}
 			
+			// TODO handle this with tablist?
 			flagHolder.getPlayer().setPlayerListName(flagHolder.getColor().getChatColor() + flagHolder.getPlayer().getName() + " " + ChatColor.GRAY + flagHolder.getFlagCounter());
 			
 			bossbar.setMessage(flagString + " " + flagHolder.getColoredName() + flagHolder.getColor().getChatColor() + " has the flag!"
@@ -284,7 +287,7 @@ public class RabbitGUI implements RabbitGameObserver {
 	public void onFlagPickUp(RabbitPlayer flagHolder, boolean wasDropped) {
 		bossbar.setMessage(flagString + " " + flagHolder.getColoredName(ChatColor.UNDERLINE) + flagHolder.getColor().getChatColor() + " picked up the flag! " + flagString);
 		bossbar.flash(2);
-		flagCounterTask = new FlagCounter(game.getFlagHolder()).runTaskTimer(Melee.getPlugin(), 30, game.getFlagTaskRate());
+		flagCounterTask = new FlagCounter(game.getFlagHolder()).runTaskTimer(Melee.getPlugin(Melee.class), 30, game.getFlagTaskRate());
 	}
 	
 	@Override

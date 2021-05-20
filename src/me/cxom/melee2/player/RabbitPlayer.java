@@ -2,13 +2,13 @@ package me.cxom.melee2.player;
 
 import org.bukkit.entity.Player;
 
-import net.punchtree.minigames.utility.color.MinigameColor;
+import net.punchtree.util.color.PunchTreeColor;
 
 public class RabbitPlayer extends MeleePlayer implements Comparable<RabbitPlayer> {
 
 	private int flagCounter;
 	
-	public RabbitPlayer(Player player, MinigameColor color, int flagCounterStart) {
+	public RabbitPlayer(Player player, PunchTreeColor color, int flagCounterStart) {
 		super(player, color);
 		
 		this.flagCounter = flagCounterStart;

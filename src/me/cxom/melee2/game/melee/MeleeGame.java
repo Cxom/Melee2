@@ -26,9 +26,9 @@ import net.punchtree.minigames.game.GameState;
 import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.utility.collections.CirculatingList;
-import net.punchtree.minigames.utility.color.MinigameColor;
 import net.punchtree.minigames.utility.player.PlayerProfile;
 import net.punchtree.minigames.utility.player.PlayerUtils;
+import net.punchtree.util.color.PunchTreeColor;
 
 /**
  * Represents an instance of a Melee game on one arena. 
@@ -108,16 +108,12 @@ public class MeleeGame implements PvpGame {
 	public boolean hasPlayer(Player player) { 
 		return hasPlayer(player.getUniqueId()); 
 	}
-	
-	public boolean hasWinner() {
-		return leader != null && leader.getKills() >= arena.getKillsToEnd();
-	}
 
 	// -------end-getters-------- //
 	
 	void startGame(Set<Player> startingPlayers) {
 		
-		CirculatingList<MinigameColor> colors = getPlayerColorList();
+		CirculatingList<PunchTreeColor> colors = getPlayerColorList();
 		
 		for (Player player : startingPlayers){
 			
@@ -138,19 +134,8 @@ public class MeleeGame implements PvpGame {
 		gui.playStart();
 	}
 	
-	private CirculatingList<MinigameColor> getPlayerColorList(){
-		return new CirculatingList<>(MinigameColor.getDefaults(), true);
-	}
-	
-	void runPostgame(MeleePlayer winner) {
-		gui.playPostgame(winner, MeleeGame.POSTGAME_DURATION_SECONDS);
-		
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				resetGame();
-			}
-		}.runTaskLater(Melee.getPlugin(), MeleeGame.POSTGAME_DURATION_SECONDS * 20);
+	private CirculatingList<PunchTreeColor> getPlayerColorList(){
+		return new CirculatingList<>(PunchTreeColor.getDefaults(), true);
 	}
 	
 	void resetGame() {
@@ -161,8 +146,9 @@ public class MeleeGame implements PvpGame {
 		// Remove all players (same as removePlayer)
 		this.players.keySet().forEach(movement::removePlayer);
 		this.players.clear();
-		this.spawns.shuffle();
-		this.spawns.resetIterator();
+		// These are already implemented in the CirculatingList class
+//		this.spawns.shuffle();
+//		this.spawns.resetIterator();
 		
 		// Reset other state
 		this.setLeader(null);
@@ -224,7 +210,6 @@ public class MeleeGame implements PvpGame {
 		this.gamestate = gamestate;
 	}
 	
-	
 	// -------------------------- //
 	// ---- EVENT RESPONDERS ---- //
 	// -------------------------- //
@@ -252,25 +237,22 @@ public class MeleeGame implements PvpGame {
 		
 		this.spawnPlayer(mpKilled);
 		
-		if (hasWon(mpKiller)){
-			runPostgameWithWinner(mpKiller);
-		}
+		
 		
 		gui.playKill(mpKiller, mpKilled, e, killLocation);
 		
-		if (hasWinner()) { // This needs to only trigger once
-			this.runPostgame(mpKiller);
+		checkForWinner();
+	}
+	
+	private void checkForWinner() {
+		if (leader != null && leader.getKills() >= this.getKillsNeededToWin()) {
+			runPostgameWithWinner(leader);
 		}
-		
 	}
 	
 	private boolean isNewLeader(MeleePlayer killer) {
 		return this.getLeader() == null 
 		    || killer.getKills() > this.getLeader().getKills();
-	}
-	
-	private boolean hasWon(MeleePlayer player) {
-		return player.getKills() >= this.getKillsNeededToWin();
 	}
 	
 	void handleDeath(Player killed, EntityDamageEvent e){
@@ -291,9 +273,9 @@ public class MeleeGame implements PvpGame {
 		//Entity Explosion is off to prevent firework damage from kills
 		return cause == DamageCause.FALL || cause == DamageCause.ENTITY_EXPLOSION;
 	}
-	
-	// Runs the end of the game
-	private void runPostgameWithWinner(MeleePlayer winner) {
+
+	void runPostgameWithWinner(MeleePlayer winner) {
+		gui.playPostgame(winner, MeleeGame.POSTGAME_DURATION_SECONDS);
 		
 		setGameState(GameState.ENDING);
 		players.values().forEach(mp -> {
@@ -302,8 +284,13 @@ public class MeleeGame implements PvpGame {
 			mp.getPlayer().setInvulnerable(true);
 		});
 		
+		new BukkitRunnable() {
+			@Override
+			public void run() {
+				resetGame();
+			}
+		}.runTaskLater(Melee.getPlugin(Melee.class), MeleeGame.POSTGAME_DURATION_SECONDS * 20);
 	}
-	
 	
 	private final double SPAWNING_DISTANCE = 12;
 	private final double SPAWNING_DISTANCE_SQUARED = SPAWNING_DISTANCE * SPAWNING_DISTANCE;

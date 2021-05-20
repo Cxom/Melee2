@@ -9,9 +9,9 @@ import org.bukkit.entity.Player;
 import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.arena.configuration.MeleeAndRabbitArenaLoader;
 import me.cxom.melee2.game.melee.MeleeGame;
-import me.cxom.melee2.gui.menu.MinigameMenu;
 import net.punchtree.minigames.arena.creation.ArenaManager;
 import net.punchtree.minigames.lobby.Lobby;
+import net.punchtree.minigames.menu.MinigameMenu;
 
 public class MeleeGameManager {
 	
