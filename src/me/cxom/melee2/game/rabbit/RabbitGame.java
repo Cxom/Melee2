@@ -299,7 +299,7 @@ public class RabbitGame implements PvpGame, Listener {
 	/**
 	 * Used for *force* stopping a game (not regular game ending by a win)
 	 */
-	public void stopGame(){
+	public void interruptAndShutdown(){
 		gui.playStop();
 		
 		resetGame();
