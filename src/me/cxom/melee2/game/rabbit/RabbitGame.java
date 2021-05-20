@@ -40,10 +40,10 @@ import net.punchtree.minigames.game.GameState;
 import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.utility.collections.CirculatingList;
-import net.punchtree.minigames.utility.color.MinigameColor;
 import net.punchtree.minigames.utility.player.InventoryUtils;
 import net.punchtree.minigames.utility.player.PlayerProfile;
 import net.punchtree.minigames.utility.player.PlayerUtils;
+import net.punchtree.util.color.PunchTreeColor;
 
 /**
  * Represents an instance of a Rabbit game on one arena. 
@@ -135,7 +135,6 @@ public class RabbitGame implements PvpGame, Listener {
 				
 				runPostgameWithWinner(flagHolder);
 				
-				notifyGameWin(flagHolder);
 			}
 		}
 	}
@@ -232,7 +231,7 @@ public class RabbitGame implements PvpGame, Listener {
 	
 	void startGame(Set<Player> startingPlayers) {
 		
-		CirculatingList<MinigameColor> colors = new CirculatingList<>(MinigameColor.getDefaults(), true);
+		CirculatingList<PunchTreeColor> colors = new CirculatingList<>(PunchTreeColor.getDefaults(), true);
 		
 		for (Player player : startingPlayers){
 			
@@ -261,11 +260,11 @@ public class RabbitGame implements PvpGame, Listener {
 				spawnFlagAtCenter();
 				initializeFlagCounterTask();
 			}
-		}.runTaskLater(Melee.getPlugin(), firstFlagSpawnDelay * 20);
+		}.runTaskLater(Melee.getPlugin(Melee.class), firstFlagSpawnDelay * 20);
 	}
 	
 	private void initializeFlagCounterTask() {
-		flagTask = new FlagTimer().runTaskTimer(Melee.getPlugin(), 0, flagTaskRate);
+		flagTask = new FlagTimer().runTaskTimer(Melee.getPlugin(Melee.class), 0, flagTaskRate);
 	}
 	
 	void resetGame() {
@@ -533,6 +532,7 @@ public class RabbitGame implements PvpGame, Listener {
 	
 	// Runs the end of the game
 	private void runPostgameWithWinner(RabbitPlayer winner) {
+		notifyGameWin(flagHolder);
 		
 		setState(GameState.ENDING);
 		
@@ -543,7 +543,6 @@ public class RabbitGame implements PvpGame, Listener {
 		});
 		
 		resetAfterPostgame();
-		
 	}
 	
 	private void resetAfterPostgame() {
@@ -552,7 +551,7 @@ public class RabbitGame implements PvpGame, Listener {
 			public void run() {
 				RabbitGame.this.resetGame();
 			}
-		}.runTaskLater(Melee.getPlugin(), MeleeGame.POSTGAME_DURATION_SECONDS * 20);
+		}.runTaskLater(Melee.getPlugin(Melee.class), MeleeGame.POSTGAME_DURATION_SECONDS * 20);
 	}
 	
 	

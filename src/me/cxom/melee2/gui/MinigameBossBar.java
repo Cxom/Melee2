@@ -11,9 +11,11 @@ import me.cxom.melee2.Melee;
 
 public class MinigameBossBar {
 
-	private BossBar bossbar = Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SOLID);
+	private BossBar bossbar;
 	
-	public MinigameBossBar(){}
+	public MinigameBossBar() {
+		bossbar = Bukkit.createBossBar("", BarColor.WHITE, BarStyle.SOLID);
+	}
 	
 	public MinigameBossBar(String title){
 		bossbar.setTitle(title);
@@ -21,6 +23,10 @@ public class MinigameBossBar {
 	
 	public void setColor(BarColor color) {
 		bossbar.setColor(color);
+	}
+	
+	public void setStyle(BarStyle style) {
+		bossbar.setStyle(style);
 	}
 	
 	public void setMessage(String title){
@@ -47,7 +53,7 @@ public class MinigameBossBar {
 				}
 				i--;
 			}
-		}.runTaskTimer(Melee.getPlugin(), 0, 6);
+		}.runTaskTimer(Melee.getPlugin(Melee.class), 0, 6);
 	}
 	
 	public void reset() {
