@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -18,7 +19,11 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.cxom.melee2.arena.MeleeArena;
+import me.cxom.melee2.arena.RabbitArena;
 import me.cxom.melee2.arena.configuration.MeleeAndRabbitArenaLoader;
+import me.cxom.melee2.game.melee.MeleeGame;
+import me.cxom.melee2.game.rabbit.RabbitGame;
+import net.punchtree.minigames.arena.creation.ArenaManager;
 import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.menu.MinigameMenu;
 import net.punchtree.minigames.utility.player.InventoryUtils;
@@ -37,6 +42,12 @@ public class Melee extends JavaPlugin {
 	static File meleeArenaFolder;
 	static File rabbitArenaFolder;
 	
+	private ArenaManager<MeleeArena> meleeArenaManager;
+	private ArenaManager<RabbitArena> rabbitArenaManager;
+	
+	private GameManager<MeleeGame> meleeGameManager;
+	private GameManager<RabbitGame> rabbitGameManager;
+	
 	private MinigameMenu allLobbiesMenu;
 	
 	@Override
@@ -47,32 +58,57 @@ public class Melee extends JavaPlugin {
 		meleeArenaFolder = new File(getDataFolder().getAbsolutePath() + File.separator + "Arenas");
 		rabbitArenaFolder = new File(getDataFolder().getAbsolutePath() + File.separator + "RabbitArenas");
 
-		// Register Events
-		// - None global right now
+		meleeArenaManager = new ArenaManager<>(Melee.meleeArenaFolder, MeleeAndRabbitArenaLoader::loadMeleeArena);
+		rabbitArenaManager = new ArenaManager<>(Melee.rabbitArenaFolder, MeleeAndRabbitArenaLoader::loadRabbitArena);
 		
-		// Load arenas and create a game for each
+		meleeGameManager = new GameManager<>("Melee Games");
+		rabbitGameManager = new GameManager<>("Rabbit Games");
 		
-		MeleeGameManager.createAllGames();
-		RabbitGameManager.createAllGames();
-		
-		System.out.print("Created Melee Games: ");
-		MeleeGameManager.getGamesList().forEach(a -> System.out.print(a.getName() + " "));
-		System.out.println();
-		
-		System.out.print("Loaded Rabbit Games: ");
-		RabbitGameManager.getGamesList().forEach(a -> System.out.print(a.getName()+ " "));
-		System.out.println();
+		// TODO Register Events smarter
+
+		createAllGames();
 	
 		List<Lobby> allLobbies = new ArrayList<Lobby>();
-		allLobbies.addAll(MeleeGameManager.getLobbyList());
-		allLobbies.addAll(RabbitGameManager.getLobbyList());
+		allLobbies.addAll(meleeGameManager.getLobbyList());
+		allLobbies.addAll(rabbitGameManager.getLobbyList());
 		allLobbiesMenu = new MinigameMenu("All Games", allLobbies);
+	}
+	
+	/**
+	 * Load arenas and create a game for each
+	 */
+	private void createAllGames() {
+		// Create a melee game for each melee arena
+		meleeArenaManager.loadArenas();
+		meleeArenaManager.getArenas().forEach(meleeArena -> {
+			MeleeGame game = new MeleeGame(meleeArena);
+			meleeGameManager.addGame(meleeArena.getName(), game, game.getLobby());
+		});
+		
+		// Create a rabbit game for each rabbit arena
+		rabbitArenaManager.loadArenas();
+		rabbitArenaManager.getArenas().forEach(rabbitArena -> {
+			RabbitGame game = new RabbitGame(rabbitArena);
+			rabbitGameManager.addGame(rabbitArena.getName(), game, game.getLobby());
+		});
+		
+		// Log out what games were created
+		String meleeGamesList = meleeGameManager.getGamesList().stream()
+															   .map(game -> game.getArena().getName())
+															   .collect(Collectors.joining(", "));
+		getLogger().info("Created Melee Games for arenas : " + meleeGamesList);
+
+		String rabbitGamesList = rabbitGameManager.getGamesList().stream()
+																 .map(game -> game.getArena().getName())
+																 .collect(Collectors.joining(", "));
+		getLogger().info("Created Rabbit Games for arenas : " + rabbitGamesList);
 	}
 	
 
 	@Override
 	public void onDisable(){
-		MeleeGameManager.stopAllGames();
+		meleeGameManager.stopAllGames();
+		rabbitGameManager.stopAllGames();
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -83,7 +119,7 @@ public class Melee extends JavaPlugin {
 			if (! (sender instanceof Player)) return true;
 			Player player = (Player) sender;
 			
-			RabbitGameManager.showMenuTo(player);	
+			rabbitGameManager.showMenuTo(player);	
 			return true;
 		}
 		
@@ -113,17 +149,17 @@ public class Melee extends JavaPlugin {
 		    case "join":
 				if (args.length < 2) {
 					player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + "/melee join <arena> (or just type /melee)");
-				} else if (! MeleeGameManager.hasGame(args[1])){
+				} else if ( ! meleeGameManager.hasGame(args[1])){
 					player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + " There is no game/arena named " + args[1] + "!");
 				} else {
-					MeleeGameManager.addPlayerToGameLobby(args[1], player);
+					meleeGameManager.addPlayerToGameLobby(args[1], player);
 				}
 				return true;
 				
 		    case "convert":
 		    	if (args.length == 2) {
 		    		String arenaName = args[1];
-		    		MeleeArena meleeArena = MeleeGameManager.meleeArenaManager.getArena(arenaName);
+		    		MeleeArena meleeArena = meleeArenaManager.getArena(arenaName);
 		    		if (arenaName != null) {
 		    			convertMeleeArena(player.getLocation().getBlock().getLocation(), meleeArena);
 		    			player.sendMessage(ChatColor.GREEN + "" + ChatColor.ITALIC + "Converted " + arenaName);
@@ -139,10 +175,11 @@ public class Melee extends JavaPlugin {
 				InventoryUtils.restoreBackupInventory(Bukkit.getOfflinePlayer(args[1]).getUniqueId(), player);
 				return true;
 		    case "debug":
+		    	// TODO clean up this (probs not needed anymore anyway)
 		    	if (args.length <= 1) {
-		    		MeleeGameManager.debugGamesList(player);
+		    		meleeGameManager.debugGamesList(player);
 		    	} else {
-		    		MeleeGameManager.debugGame(args[1], player);
+//		    		meleeGameManager.debugGame(args[1], player);
 		    	} 
 		    	return true;
 		    
@@ -157,7 +194,7 @@ public class Melee extends JavaPlugin {
 			return true;
 		}
 		
-		MeleeGameManager.showMenuTo((Player) sender);
+		meleeGameManager.showMenuTo((Player) sender);
 		
 		return true;
 	}
