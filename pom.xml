@@ -54,7 +54,7 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.3.1</version>
 				<configuration>
-					<outputDirectory>D:\Users\Cxom\Desktop\ScratchTester2\plugins\1.16.5\</outputDirectory>
+					<outputDirectory>${outputDirectory}</outputDirectory>
 				</configuration>
 			</plugin>
 			<plugin>
