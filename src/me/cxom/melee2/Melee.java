@@ -24,6 +24,7 @@ import me.cxom.melee2.arena.configuration.MeleeAndRabbitArenaLoader;
 import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.game.rabbit.RabbitGame;
 import net.punchtree.minigames.arena.creation.ArenaManager;
+import net.punchtree.minigames.game.GameManager;
 import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.menu.MinigameMenu;
 import net.punchtree.minigames.utility.player.InventoryUtils;
@@ -39,8 +40,8 @@ public class Melee extends JavaPlugin {
 	private static Plugin plugin;
 	public static Plugin getPlugin(){ return plugin; }
 	
-	static File meleeArenaFolder;
-	static File rabbitArenaFolder;
+	private File meleeArenaFolder;
+	private File rabbitArenaFolder;
 	
 	private ArenaManager<MeleeArena> meleeArenaManager;
 	private ArenaManager<RabbitArena> rabbitArenaManager;
@@ -58,8 +59,8 @@ public class Melee extends JavaPlugin {
 		meleeArenaFolder = new File(getDataFolder().getAbsolutePath() + File.separator + "Arenas");
 		rabbitArenaFolder = new File(getDataFolder().getAbsolutePath() + File.separator + "RabbitArenas");
 
-		meleeArenaManager = new ArenaManager<>(Melee.meleeArenaFolder, MeleeAndRabbitArenaLoader::loadMeleeArena);
-		rabbitArenaManager = new ArenaManager<>(Melee.rabbitArenaFolder, MeleeAndRabbitArenaLoader::loadRabbitArena);
+		meleeArenaManager = new ArenaManager<>(meleeArenaFolder, MeleeAndRabbitArenaLoader::loadMeleeArena);
+		rabbitArenaManager = new ArenaManager<>(rabbitArenaFolder, MeleeAndRabbitArenaLoader::loadRabbitArena);
 		
 		meleeGameManager = new GameManager<>("Melee Games");
 		rabbitGameManager = new GameManager<>("Rabbit Games");
@@ -115,26 +116,20 @@ public class Melee extends JavaPlugin {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
 		
+		if (! (sender instanceof Player)) return true;
+		Player player = (Player) sender;
+		
 		if (label.equalsIgnoreCase("rabbit")) {
-			if (! (sender instanceof Player)) return true;
-			Player player = (Player) sender;
-			
 			rabbitGameManager.showMenuTo(player);	
 			return true;
 		}
 		
-		if (label.equalsIgnoreCase("games") || label.equalsIgnoreCase("join")) {
-			if (! (sender instanceof Player)) return true;
-			Player player = (Player) sender;
-			
+		if (label.equalsIgnoreCase("games")) {		
 			allLobbiesMenu.showTo(player);
 			return true;
 		}
 		
 		if ( ! label.equalsIgnoreCase("melee")) return true;
-		
-		if (! (sender instanceof Player)) return true;
-		Player player = (Player) sender;
 			
 		if (args.length > 0){
 		    switch (args[0]) {
@@ -174,14 +169,6 @@ public class Melee extends JavaPlugin {
 				if (! (player).isOp()) return true;
 				InventoryUtils.restoreBackupInventory(Bukkit.getOfflinePlayer(args[1]).getUniqueId(), player);
 				return true;
-		    case "debug":
-		    	// TODO clean up this (probs not needed anymore anyway)
-		    	if (args.length <= 1) {
-		    		meleeGameManager.debugGamesList(player);
-		    	} else {
-//		    		meleeGameManager.debugGame(args[1], player);
-		    	} 
-		    	return true;
 		    
 		    //default just won't return --> opens the /melee menu
 		    }
@@ -189,8 +176,7 @@ public class Melee extends JavaPlugin {
 		}
 		
 		if (PlayerProfile.isSaved(player)) {
-			//Don't do this at home. This was done by trained unprofessionals with no supervision.
-			Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "/mail Cxomtdoh " + player.getName() + " tried to join with a saved inventory.");
+			getLogger().severe(player.getName() + " tried to join a game but has a saved inventory!");
 			return true;
 		}
 		
@@ -199,7 +185,7 @@ public class Melee extends JavaPlugin {
 		return true;
 	}
 	
-	private static void convertMeleeArena(Location relative, MeleeArena meleeArena) {
+	private void convertMeleeArena(Location relative, MeleeArena meleeArena) {
 		File arenaf = new File(meleeArenaFolder + File.separator + meleeArena.getName() + "-relative" + ".yml");
 		
 		try {
