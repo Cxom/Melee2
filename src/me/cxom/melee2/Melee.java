@@ -51,6 +51,8 @@ public class Melee extends JavaPlugin {
 	
 	private MinigameMenu allLobbiesMenu;
 	
+	private MeleeAndRabbitCommandExecutor commandExecutor;
+	
 	@Override
 	public void onEnable(){
 		
@@ -73,6 +75,11 @@ public class Melee extends JavaPlugin {
 		allLobbies.addAll(meleeGameManager.getLobbyList());
 		allLobbies.addAll(rabbitGameManager.getLobbyList());
 		allLobbiesMenu = new MinigameMenu("All Games", allLobbies);
+		
+		commandExecutor = new MeleeAndRabbitCommandExecutor(rabbitGameManager, meleeGameManager, allLobbiesMenu, meleeArenaManager, Bukkit.getLogger(), meleeArenaFolder);
+		getCommand("melee").setExecutor(commandExecutor);
+		getCommand("rabbit").setExecutor(commandExecutor);
+		getCommand("games").setExecutor(commandExecutor);
 	}
 	
 	/**
@@ -111,102 +118,5 @@ public class Melee extends JavaPlugin {
 		meleeGameManager.stopAllGames();
 		rabbitGameManager.stopAllGames();
 	}
-	
-	@SuppressWarnings("deprecation")
-	@Override
-	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args){
-		
-		if (! (sender instanceof Player)) return true;
-		Player player = (Player) sender;
-		
-		if (label.equalsIgnoreCase("rabbit")) {
-			rabbitGameManager.showMenuTo(player);	
-			return true;
-		}
-		
-		if (label.equalsIgnoreCase("games")) {		
-			allLobbiesMenu.showTo(player);
-			return true;
-		}
-		
-		if ( ! label.equalsIgnoreCase("melee")) return true;
-			
-		if (args.length > 0){
-		    switch (args[0]) {
-		    case "leave":
-				/*
-				 * This is preprocessed in MeleeInstance in order to determine the game,
-				 * and cancelled if it goes through.
-				 */
-		    	player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + "You're not in a game!");
-				
-				return true;
-		    case "join":
-				if (args.length < 2) {
-					player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + "/melee join <arena> (or just type /melee)");
-				} else if ( ! meleeGameManager.hasGame(args[1])){
-					player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + " There is no game/arena named " + args[1] + "!");
-				} else {
-					meleeGameManager.addPlayerToGameLobby(args[1], player);
-				}
-				return true;
-				
-		    case "convert":
-		    	if (args.length == 2) {
-		    		String arenaName = args[1];
-		    		MeleeArena meleeArena = meleeArenaManager.getArena(arenaName);
-		    		if (arenaName != null) {
-		    			convertMeleeArena(player.getLocation().getBlock().getLocation(), meleeArena);
-		    			player.sendMessage(ChatColor.GREEN + "" + ChatColor.ITALIC + "Converted " + arenaName);
-		    		}
-		    	}
-		    	return true;
-			// debug commands
-		    case "backup":
-				InventoryUtils.backupInventory(player);
-				return true;
-		    case "restore":
-				if (! (player).isOp()) return true;
-				InventoryUtils.restoreBackupInventory(Bukkit.getOfflinePlayer(args[1]).getUniqueId(), player);
-				return true;
-		    
-		    //default just won't return --> opens the /melee menu
-		    }
-		    
-		}
-		
-		if (PlayerProfile.isSaved(player)) {
-			getLogger().severe(player.getName() + " tried to join a game but has a saved inventory!");
-			return true;
-		}
-		
-		meleeGameManager.showMenuTo((Player) sender);
-		
-		return true;
-	}
-	
-	private void convertMeleeArena(Location relative, MeleeArena meleeArena) {
-		File arenaf = new File(meleeArenaFolder + File.separator + meleeArena.getName() + "-relative" + ".yml");
-		
-		try {
-			if (! arenaf.exists()) {
-				arenaf.createNewFile();
-			}
-			FileConfiguration arenacfg = new YamlConfiguration();
-			
-			arenacfg.load(arenaf);
-			
-			MeleeAndRabbitArenaLoader.convertMeleeArena(relative, meleeArena, arenacfg);
-			
-			arenacfg.save(arenaf);
-			
-		} catch (IOException | InvalidConfigurationException e) {
-			e.printStackTrace();
-		}
-	}
-	
-//	public static MeleeGame getGame(String name){
-//		return games.get(name);
-//	}
 	
 }
