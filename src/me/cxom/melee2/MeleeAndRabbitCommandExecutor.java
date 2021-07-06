@@ -64,14 +64,6 @@ public class MeleeAndRabbitCommandExecutor implements CommandExecutor {
 			
 		if (args.length > 0){
 		    switch (args[0]) {
-		    case "leave":
-				/*
-				 * This is preprocessed in MeleeInstance in order to determine the game,
-				 * and cancelled if it goes through.
-				 */
-		    	player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + "You're not in a game!");
-				
-				return true;
 		    case "join":
 				if (args.length < 2) {
 					player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + "/melee join <arena> (or just type /melee)");

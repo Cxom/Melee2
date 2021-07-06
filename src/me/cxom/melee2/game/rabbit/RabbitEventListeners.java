@@ -107,7 +107,7 @@ class RabbitEventListeners implements Listener {
 		//but this could probably be done properly
 		@EventHandler
 		public void onMeleeLeaveCommand(PlayerCommandPreprocessEvent e) {
-			if (! e.getMessage().startsWith("/melee leave")) return;
+			if (! e.getMessage().startsWith("/leave")) return;
 			if (game.removePlayerFromGame(e.getPlayer()) || game.removePlayerFromLobby(e.getPlayer())){
 				e.setCancelled(true); //Prevents normal command execution
 			}
@@ -163,7 +163,7 @@ class RabbitEventListeners implements Listener {
 		
 		private static final List<String> cmds = new ArrayList<String>(Arrays.asList(new String[] {
 				"/m", "/msg", "/message", "/t", "/tell", "/w", "/whisper", "/r",
-				"/reply", "/ac", "/helpop"}));
+				"/reply", "/ac", "/helpop", "/leave"}));
 
 		@EventHandler
 		public void onPlayerCommandPreprocessEvent(PlayerCommandPreprocessEvent e) {
@@ -171,8 +171,7 @@ class RabbitEventListeners implements Listener {
 			String command = e.getMessage().toLowerCase() + " ";
 			if ((game.hasPlayer(player) || game.getLobby().hasPlayer(player))
 			 && ! player.isOp()
-			 && ! cmds.contains(command.split(" ")[0])
-			 && ! command.toLowerCase().startsWith("/melee leave")) {
+			 && ! cmds.contains(command.split(" ")[0])) {
 				
 				e.setCancelled(true);
 				player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + "You do not have permission to use non-messaging commands in Melee. If you wish to leave the match, type /melee leave.");
