@@ -27,6 +27,8 @@ import net.punchtree.minigames.utility.player.PlayerProfile;
 
 public class MeleeAndRabbitCommandExecutor implements CommandExecutor {
 
+	private static final String MELEE_ADMIN_PERMISSION = "melee.admin";
+	
 	private final GameManager<RabbitGame> rabbitGameManager;
 	private final GameManager<MeleeGame> meleeGameManager;
 	private final MinigameMenu allLobbiesMenu;
@@ -62,18 +64,23 @@ public class MeleeAndRabbitCommandExecutor implements CommandExecutor {
 		
 		if ( ! label.equalsIgnoreCase("melee")) return true;
 			
-		if (args.length > 0){
-		    switch (args[0]) {
-		    case "join":
-				if (args.length < 2) {
-					player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + "/melee join <arena> (or just type /melee)");
-				} else if ( ! meleeGameManager.hasGame(args[1])){
-					player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + " There is no game/arena named " + args[1] + "!");
-				} else {
-					meleeGameManager.addPlayerToGameLobby(args[1], player);
-				}
+		if (args.length > 0 && "join".equalsIgnoreCase(args[0])){
+			if (args.length < 2) {
+				player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + "/melee join <arena> (or just type /melee)");
+			} else if ( ! meleeGameManager.hasGame(args[1])){
+				player.sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.RED + " There is no game/arena named " + args[1] + "!");
+			} else {
+				meleeGameManager.addPlayerToGameLobby(args[1], player);
+			}
+			return true;
+		}
+		
+		if (args.length > 0) {
+			if (!sender.hasPermission(MELEE_ADMIN_PERMISSION)) {
+				sender.sendMessage(ChatColor.RED + "You do not have permission to do that!");
 				return true;
-				
+			}
+		    switch (args[0]) {
 		    case "convert":
 		    	if (args.length == 2) {
 		    		String arenaName = args[1];
@@ -92,10 +99,9 @@ public class MeleeAndRabbitCommandExecutor implements CommandExecutor {
 				if (! (player).isOp()) return true;
 				InventoryUtils.restoreBackupInventory(Bukkit.getOfflinePlayer(args[1]).getUniqueId(), player);
 				return true;
-		    
+
 		    //default just won't return --> opens the /melee menu
 		    }
-		    
 		}
 		
 		if (PlayerProfile.isSaved(player)) {

@@ -76,7 +76,7 @@ public class Melee extends JavaPlugin {
 		allLobbies.addAll(rabbitGameManager.getLobbyList());
 		allLobbiesMenu = new MinigameMenu("All Games", allLobbies);
 		
-		commandExecutor = new MeleeAndRabbitCommandExecutor(rabbitGameManager, meleeGameManager, allLobbiesMenu, meleeArenaManager, Bukkit.getLogger(), meleeArenaFolder);
+		commandExecutor = new MeleeAndRabbitCommandExecutor(rabbitGameManager, meleeGameManager, allLobbiesMenu, meleeArenaManager, getLogger(), meleeArenaFolder);
 		getCommand("melee").setExecutor(commandExecutor);
 		getCommand("rabbit").setExecutor(commandExecutor);
 		getCommand("games").setExecutor(commandExecutor);
