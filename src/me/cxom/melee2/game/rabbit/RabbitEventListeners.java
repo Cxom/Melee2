@@ -98,9 +98,7 @@ class RabbitEventListeners implements Listener {
 	
 		@EventHandler
 		public void onPlayerLeaveServer(PlayerQuitEvent e){
-			if ( ! game.removePlayerFromGame(e.getPlayer())) {
-				 game.removePlayerFromLobby(e.getPlayer());
-			}
+			game.removePlayerFromGame(e.getPlayer());
 		}
 		
 		//This was a preprocess event so that the game the player is in can be determined,
@@ -108,7 +106,7 @@ class RabbitEventListeners implements Listener {
 		@EventHandler
 		public void onMeleeLeaveCommand(PlayerCommandPreprocessEvent e) {
 			if (! e.getMessage().startsWith("/leave")) return;
-			if (game.removePlayerFromGame(e.getPlayer()) || game.removePlayerFromLobby(e.getPlayer())){
+			if (game.removePlayerFromGame(e.getPlayer())){
 				e.setCancelled(true); //Prevents normal command execution
 			}
 		}
@@ -169,7 +167,7 @@ class RabbitEventListeners implements Listener {
 		public void onPlayerCommandPreprocessEvent(PlayerCommandPreprocessEvent e) {
 			Player player = e.getPlayer();
 			String command = e.getMessage().toLowerCase() + " ";
-			if ((game.hasPlayer(player) || game.getLobby().hasPlayer(player))
+			if ((game.hasPlayer(player))
 			 && ! player.isOp()
 			 && ! cmds.contains(command.split(" ")[0])) {
 				

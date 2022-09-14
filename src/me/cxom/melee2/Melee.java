@@ -90,14 +90,14 @@ public class Melee extends JavaPlugin {
 		meleeArenaManager.loadArenas();
 		meleeArenaManager.getArenas().forEach(meleeArena -> {
 			MeleeGame game = new MeleeGame(meleeArena);
-			meleeGameManager.addGame(meleeArena.getName(), game, game.getLobby());
+			meleeGameManager.addGame(meleeArena.getName(), game, new Lobby(game, game::startGame, Melee.MELEE_CHAT_PREFIX));
 		});
 		
 		// Create a rabbit game for each rabbit arena
 		rabbitArenaManager.loadArenas();
 		rabbitArenaManager.getArenas().forEach(rabbitArena -> {
 			RabbitGame game = new RabbitGame(rabbitArena);
-			rabbitGameManager.addGame(rabbitArena.getName(), game, game.getLobby());
+			rabbitGameManager.addGame(rabbitArena.getName(), game, new Lobby(game, game::startGame, Melee.RABBIT_CHAT_PREFIX));
 		});
 		
 		// Log out what games were created

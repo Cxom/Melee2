@@ -38,7 +38,6 @@ import me.cxom.melee2.gui.rabbit.RabbitGUI;
 import me.cxom.melee2.player.RabbitPlayer;
 import net.punchtree.minigames.game.GameState;
 import net.punchtree.minigames.game.PvpGame;
-import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.utility.collections.CirculatingList;
 import net.punchtree.minigames.utility.player.InventoryUtils;
 import net.punchtree.minigames.utility.player.PlayerProfile;
@@ -60,7 +59,6 @@ public class RabbitGame implements PvpGame, Listener {
 	private final RabbitArena arena; //Model
 	private final CirculatingList<Location> spawns;
 	private final Location flagSpawnLocation;
-	private final Lobby lobby;
 	private final RabbitGUI gui;
 	private final MovementSystem movement = MovementPlusPlus.CXOMS_MOVEMENT;
 	
@@ -103,7 +101,6 @@ public class RabbitGame implements PvpGame, Listener {
 		this.flagSpawnLocation = arena.getCenterpoint();
 		this.timeToWin = Math.round(arena.getFlagTimeToWin() * (20f / flagTaskRate));
 		this.gui = new RabbitGUI(this);
-		this.lobby = new Lobby(this, this::startGame, Melee.RABBIT_CHAT_PREFIX);
 		new RabbitEventListeners(this);
 		
 		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
@@ -174,11 +171,7 @@ public class RabbitGame implements PvpGame, Listener {
 	public GameState getGameState(){
 		return gamestate; 
 	}
-	
-	public Lobby getLobby() {
-		return lobby;
-	}
-	
+
 	public int getTimeToWin() {
 		return timeToWin;
 	}
@@ -229,7 +222,7 @@ public class RabbitGame implements PvpGame, Listener {
 	// ------- SETTERS ---------- //
 	// -------------------------- //
 	
-	void startGame(Set<Player> startingPlayers) {
+	public void startGame(Set<Player> startingPlayers) {
 		
 		CirculatingList<PunchTreeColor> colors = new CirculatingList<>(PunchTreeColor.getDefaults(), true);
 		
@@ -303,8 +296,7 @@ public class RabbitGame implements PvpGame, Listener {
 		gui.playStop();
 		
 		resetGame();
-		lobby.removeAndRestoreAll();
-		
+
 		setState(GameState.STOPPED);
 	}
 	
@@ -344,14 +336,6 @@ public class RabbitGame implements PvpGame, Listener {
 		}
 	
 		return true;
-	}
-	
-	boolean removePlayerFromLobby(Player player) {
-		//Is the remove request valid?
-		if (!lobby.hasPlayer(player)) return false;
-		
-		lobby.removeAndRestorePlayer(player);
-		return true;	
 	}
 	
 	private void setFlagStatus(FlagStatus status) {
@@ -589,9 +573,6 @@ public class RabbitGame implements PvpGame, Listener {
 													  .map(mp -> mp.getPlayer().getName())
 													  .collect(Collectors.toList()));
 		player.sendMessage("Game State: " + getGameState());
-		player.sendMessage("Lobby players: " + lobby.getPlayers().stream()
-													  .map(Player::getName)
-													  .collect(Collectors.toList()));
 	}
 	
 	// -------------------

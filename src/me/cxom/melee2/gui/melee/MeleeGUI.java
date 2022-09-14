@@ -21,6 +21,7 @@ import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.player.MeleePlayer;
 import net.punchtree.minigames.game.pvp.AttackMethod;
 import net.punchtree.minigames.gui.Killfeed;
+import net.punchtree.minigames.gui.PvpCommonPolish;
 import net.punchtree.minigames.messaging.Messaging;
 
 public class MeleeGUI {
@@ -61,7 +62,7 @@ public class MeleeGUI {
 		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 		this.bossbar = new MeleeBossBar();
 		this.killfeed = new Killfeed(scoreboard, Melee.MELEE_CHAT_PREFIX);
-		this.tablist = new MeleeTabList();
+		this.tablist = new MeleeTabList(game);
 	}
 	
 	public void addPlayer(MeleePlayer mp) {
@@ -108,6 +109,8 @@ public class MeleeGUI {
 	public void playKill(MeleePlayer killer, MeleePlayer killed, EntityDamageByEntityEvent e, Location killLocation) {
 		
 //		FireworkUtils.detontateInstantly(FireworkUtils.spawnFirework(killLocation.add(0, 1.1, 0), killed.getColor(), killer.getColor(), 0));
+		
+		PvpCommonPolish.playDeathPolish(killed.getPlayer(), killed.getColor());
 		
 		updateBossBarOnKill(killer);
 		tablist.updatePlayer(killer);
@@ -181,6 +184,10 @@ public class MeleeGUI {
 	
 		// Currently, non-kill death doesn't happen, so nothing we want to do
 		
+	}
+
+	public void playSpawn(MeleePlayer mp) {
+		PvpCommonPolish.playRespawnPolish(mp.getPlayer());
 	}
 
 	

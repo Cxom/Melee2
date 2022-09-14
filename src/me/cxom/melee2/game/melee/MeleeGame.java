@@ -24,7 +24,6 @@ import me.cxom.melee2.gui.melee.MeleeGUI;
 import me.cxom.melee2.player.MeleePlayer;
 import net.punchtree.minigames.game.GameState;
 import net.punchtree.minigames.game.PvpGame;
-import net.punchtree.minigames.lobby.Lobby;
 import net.punchtree.minigames.utility.collections.CirculatingList;
 import net.punchtree.minigames.utility.player.PlayerProfile;
 import net.punchtree.minigames.utility.player.PlayerUtils;
@@ -45,7 +44,6 @@ public class MeleeGame implements PvpGame {
 	// Persistent properties
 	private final MeleeArena arena; 
 	private final CirculatingList<Location> spawns;
-	private final Lobby lobby;
 	private final MeleeGUI gui;
 	private final MovementSystem movement = MovementPlusPlus.CXOMS_MOVEMENT;
 	
@@ -59,7 +57,6 @@ public class MeleeGame implements PvpGame {
 		this.arena = arena;
 		this.spawns = new CirculatingList<Location>(arena.getSpawns(), true);
 		gui = new MeleeGUI(this);
-		lobby = new Lobby(this, this::startGame, Melee.MELEE_CHAT_PREFIX);
 		new MeleeEventListeners(this);
 	}
 
@@ -81,11 +78,7 @@ public class MeleeGame implements PvpGame {
 	public MeleePlayer getLeader() {
 		return leader;
 	}
-	
-	public Lobby getLobby() {
-		return lobby;
-	}
-	
+
 	public String getName() {
 		return "Melee";
 	}
@@ -111,7 +104,7 @@ public class MeleeGame implements PvpGame {
 
 	// -------end-getters-------- //
 	
-	void startGame(Set<Player> startingPlayers) {
+	public void startGame(Set<Player> startingPlayers) {
 		
 		CirculatingList<PunchTreeColor> colors = getPlayerColorList();
 		
@@ -146,9 +139,9 @@ public class MeleeGame implements PvpGame {
 		// Remove all players (same as removePlayer)
 		this.players.keySet().forEach(movement::removePlayer);
 		this.players.clear();
-		// These are already implemented in the CirculatingList class
-//		this.spawns.shuffle();
-//		this.spawns.resetIterator();
+		// Circulating list already reshuffles and reiterates, but this prevents a double spawn on game start
+		this.spawns.shuffle();
+		this.spawns.resetIterator();
 		
 		// Reset other state
 		this.setLeader(null);
@@ -162,7 +155,6 @@ public class MeleeGame implements PvpGame {
 		gui.playStop();
 		
 		resetGame();
-		lobby.removeAndRestoreAll();
 		
 		setGameState(GameState.STOPPED);
 	}
@@ -192,14 +184,6 @@ public class MeleeGame implements PvpGame {
 		}
 	
 		return true;
-	}
-	
-	boolean removePlayerFromLobby(Player player) {
-		if (lobby.hasPlayer(player)) { 		
-			lobby.removeAndRestorePlayer(player);
-			return true;
-		}
-		return false;
 	}
 	
 	void setLeader(MeleePlayer mp) {
@@ -235,11 +219,9 @@ public class MeleeGame implements PvpGame {
 			this.setLeader(mpKiller);
 		}
 		
-		this.spawnPlayer(mpKilled);
-		
-		
-		
 		gui.playKill(mpKiller, mpKilled, e, killLocation);
+		
+		this.spawnPlayer(mpKilled);
 		
 		checkForWinner();
 	}
@@ -314,6 +296,8 @@ public class MeleeGame implements PvpGame {
 //			if (bestSpawn.distanceSquared(otherLoc) < SPAWNING_DISTANCE_SQUARED);
 //		}
 		player.teleport(getSpawns().next());
+		
+		gui.playSpawn(mp);
 	}
 	
 	public void debug(Player player) {
@@ -321,9 +305,6 @@ public class MeleeGame implements PvpGame {
 													  .map(mp -> mp.getPlayer().getName())
 													  .collect(Collectors.toList()));
 		player.sendMessage("Game State: " + getGameState());
-		player.sendMessage("Lobby players: " + lobby.getPlayers().stream()
-													  .map(Player::getName)
-													  .collect(Collectors.toList()));
 	}
 	
 }

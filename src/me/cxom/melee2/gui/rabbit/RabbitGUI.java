@@ -22,7 +22,6 @@ import me.cxom.melee2.game.rabbit.RabbitGame;
 import me.cxom.melee2.game.rabbit.RabbitGame.FlagStatus;
 import me.cxom.melee2.game.rabbit.RabbitGameObserver;
 import me.cxom.melee2.gui.MinigameBossBar;
-import me.cxom.melee2.gui.melee.MeleeTabList;
 import me.cxom.melee2.player.RabbitPlayer;
 import net.punchtree.minigames.game.pvp.AttackMethod;
 import net.punchtree.minigames.gui.Killfeed;
@@ -56,18 +55,19 @@ public class RabbitGUI implements RabbitGameObserver {
 	private final Scoreboard scoreboard;
 	private final Killfeed killfeed;
 	//TODO make tablist to record time, not kills -> RabbitTabList
-	private final MeleeTabList tablist;
+	private final RabbitTabList tablist;
 	
 	private final Set<Player> players = new HashSet<>();
 	
 	public RabbitGUI(RabbitGame game){
 		this.game = game;
+		//TODO this seems like the creator should take care of registration
 		game.registerObserver(this);
 		
 		this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 		this.bossbar = new MinigameBossBar();
 		this.killfeed = new Killfeed(scoreboard, Melee.RABBIT_CHAT_PREFIX);
-		this.tablist = new MeleeTabList();
+		this.tablist = new RabbitTabList(game);
 	}
 	
 	public void addPlayer(RabbitPlayer mp) {

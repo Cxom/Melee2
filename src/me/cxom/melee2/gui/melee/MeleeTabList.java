@@ -6,12 +6,19 @@ import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.game.rabbit.RabbitGameObserver;
 import me.cxom.melee2.player.MeleePlayer;
 
 public class MeleeTabList implements RabbitGameObserver {
 
 	private Set<Player> players = new HashSet<>();
+	
+	private final MeleeGame game;
+	
+	public MeleeTabList(MeleeGame game) {
+		this.game = game;
+	}
 	
 	public void addPlayer(MeleePlayer meleePlayer) {
 		Player player = meleePlayer.getPlayer();
@@ -22,6 +29,9 @@ public class MeleeTabList implements RabbitGameObserver {
 	public void updatePlayer(MeleePlayer meleePlayer) {
 		Player player = meleePlayer.getPlayer();
 		player.setPlayerListName(meleePlayer.getColor().getChatColor() + player.getName() + " " + ChatColor.GRAY + meleePlayer.getKills());
+		if (game != null && game.getLeader() != null) {			
+			player.setPlayerListFooter(game.getKillsNeededToWin() + " kills to win\n" + game.getLeader().getColoredName() + " leads with " + game.getLeader().getKills());
+		}
 	}
 	
 	public void removePlayer(Player player) {
@@ -39,6 +49,7 @@ public class MeleeTabList implements RabbitGameObserver {
 	 */
 	private void resetPlayerListName(Player player) {
 		player.setPlayerListName(player.getName());
+		player.setPlayerListHeaderFooter("", "");
 	}
 	
 //	@Override
