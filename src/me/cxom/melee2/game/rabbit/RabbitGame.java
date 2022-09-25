@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -35,12 +36,12 @@ import me.cxom.melee2.Melee;
 import me.cxom.melee2.arena.RabbitArena;
 import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.gui.rabbit.RabbitGUI;
+import me.cxom.melee2.player.MeleePlayer;
 import me.cxom.melee2.player.RabbitPlayer;
 import net.punchtree.minigames.game.GameState;
 import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.utility.collections.CirculatingList;
 import net.punchtree.minigames.utility.player.InventoryUtils;
-import net.punchtree.minigames.utility.player.PlayerProfile;
 import net.punchtree.minigames.utility.player.PlayerUtils;
 import net.punchtree.util.color.PunchTreeColor;
 
@@ -70,6 +71,8 @@ public class RabbitGame implements PvpGame, Listener {
 	
 	// State fields
 	private GameState gamestate = GameState.WAITING;
+
+	private Consumer<Player> onPlayerLeaveGame;
 	
 	//TODO does TreeMap do what I want it to?
 	private SortedMap<UUID, RabbitPlayer> players = new TreeMap<>();
@@ -222,7 +225,8 @@ public class RabbitGame implements PvpGame, Listener {
 	// ------- SETTERS ---------- //
 	// -------------------------- //
 	
-	public void startGame(Set<Player> startingPlayers) {
+	public void startGame(Set<Player> startingPlayers, Consumer<Player> onPlayerLeaveGame) {
+		this.onPlayerLeaveGame = onPlayerLeaveGame;
 		
 		CirculatingList<PunchTreeColor> colors = new CirculatingList<>(PunchTreeColor.getDefaults(), true);
 		
@@ -278,9 +282,7 @@ public class RabbitGame implements PvpGame, Listener {
 		
 		notifyGameReset(this.players.values());
 		
-		this.players.keySet().forEach(uuid -> {
-			PlayerProfile.restore(uuid);
-		});
+		this.players.values().stream().map(MeleePlayer::getPlayer).forEach(onPlayerLeaveGame);
 		
 		this.setState(GameState.WAITING);
 		
@@ -327,7 +329,7 @@ public class RabbitGame implements PvpGame, Listener {
 		gui.removePlayer(player);
 		
 		// RESTORE STATS & LOCATION
-		PlayerProfile.restore(player);
+		onPlayerLeaveGame.accept(player);
 		
 		// End the game if it gets down to one left.
 		if (getPlayers().size() == 1){

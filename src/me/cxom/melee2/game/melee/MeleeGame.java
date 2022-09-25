@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.bukkit.GameMode;
@@ -25,7 +26,6 @@ import me.cxom.melee2.player.MeleePlayer;
 import net.punchtree.minigames.game.GameState;
 import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.utility.collections.CirculatingList;
-import net.punchtree.minigames.utility.player.PlayerProfile;
 import net.punchtree.minigames.utility.player.PlayerUtils;
 import net.punchtree.util.color.PunchTreeColor;
 
@@ -39,8 +39,6 @@ public class MeleeGame implements PvpGame {
 	// Class constants
 	public static final int POSTGAME_DURATION_SECONDS = 10;
 	
-	
-	
 	// Persistent properties
 	private final MeleeArena arena; 
 	private final CirculatingList<Location> spawns;
@@ -52,6 +50,7 @@ public class MeleeGame implements PvpGame {
 	private Map<UUID, MeleePlayer> players = new HashMap<>();
 	private MeleePlayer leader = null;
 	
+	private Consumer<Player> onPlayerLeaveGame;
 	
 	public MeleeGame(MeleeArena arena){
 		this.arena = arena;
@@ -104,7 +103,8 @@ public class MeleeGame implements PvpGame {
 
 	// -------end-getters-------- //
 	
-	public void startGame(Set<Player> startingPlayers) {
+	public void startGame(Set<Player> startingPlayers, Consumer<Player> onPlayerLeaveGame) {
+		this.onPlayerLeaveGame = onPlayerLeaveGame;
 		
 		CirculatingList<PunchTreeColor> colors = getPlayerColorList();
 		
@@ -134,11 +134,12 @@ public class MeleeGame implements PvpGame {
 	void resetGame() {
 		gui.reset();
 		
-		this.players.keySet().forEach(PlayerProfile::restore);
-		
 		// Remove all players (same as removePlayer)
 		this.players.keySet().forEach(movement::removePlayer);
+		this.players.values().stream().map(MeleePlayer::getPlayer).forEach(onPlayerLeaveGame);
 		this.players.clear();
+		
+		
 		// Circulating list already reshuffles and reiterates, but this prevents a double spawn on game start
 		this.spawns.shuffle();
 		this.spawns.resetIterator();
@@ -175,7 +176,7 @@ public class MeleeGame implements PvpGame {
 		gui.removePlayer(player);
 		
 		// RESTORE STATS & LOCATION
-		PlayerProfile.restore(player);
+		onPlayerLeaveGame.accept(player);
 		
 		// End the game if it gets down to one player left.
 		if (getPlayers().size() == 1){

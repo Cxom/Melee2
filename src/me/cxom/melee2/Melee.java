@@ -25,7 +25,7 @@ import me.cxom.melee2.game.melee.MeleeGame;
 import me.cxom.melee2.game.rabbit.RabbitGame;
 import net.punchtree.minigames.arena.creation.ArenaManager;
 import net.punchtree.minigames.game.GameManager;
-import net.punchtree.minigames.lobby.Lobby;
+import net.punchtree.minigames.lobby.PerMapLegacyLobby;
 import net.punchtree.minigames.menu.MinigameMenu;
 import net.punchtree.minigames.utility.player.InventoryUtils;
 import net.punchtree.minigames.utility.player.PlayerProfile;
@@ -37,8 +37,8 @@ public class Melee extends JavaPlugin {
 	public static final String MELEE_CHAT_PREFIX = ChatColor.DARK_GREEN + "[" + ChatColor.WHITE + "Melee" + ChatColor.DARK_GREEN + "]" + ChatColor.RESET + " ";
 	public static final String RABBIT_CHAT_PREFIX = ChatColor.GOLD + "[" + ChatColor.WHITE + "Rabbit" + ChatColor.GOLD + "]" + ChatColor.RESET + " ";
 	
-	private static Plugin plugin;
-	public static Plugin getPlugin(){ return plugin; }
+	private static Melee plugin;
+	public static Melee getPlugin(){ return plugin; }
 	
 	private File meleeArenaFolder;
 	private File rabbitArenaFolder;
@@ -71,7 +71,7 @@ public class Melee extends JavaPlugin {
 
 		createAllGames();
 	
-		List<Lobby> allLobbies = new ArrayList<Lobby>();
+		List<PerMapLegacyLobby> allLobbies = new ArrayList<PerMapLegacyLobby>();
 		allLobbies.addAll(meleeGameManager.getLobbyList());
 		allLobbies.addAll(rabbitGameManager.getLobbyList());
 		allLobbiesMenu = new MinigameMenu("All Games", allLobbies);
@@ -90,14 +90,14 @@ public class Melee extends JavaPlugin {
 		meleeArenaManager.loadArenas();
 		meleeArenaManager.getArenas().forEach(meleeArena -> {
 			MeleeGame game = new MeleeGame(meleeArena);
-			meleeGameManager.addGame(meleeArena.getName(), game, new Lobby(game, game::startGame, Melee.MELEE_CHAT_PREFIX));
+			meleeGameManager.addGame(meleeArena.getName(), game, new PerMapLegacyLobby(game, PlayerProfile::restore, Melee.MELEE_CHAT_PREFIX));
 		});
 		
 		// Create a rabbit game for each rabbit arena
 		rabbitArenaManager.loadArenas();
 		rabbitArenaManager.getArenas().forEach(rabbitArena -> {
 			RabbitGame game = new RabbitGame(rabbitArena);
-			rabbitGameManager.addGame(rabbitArena.getName(), game, new Lobby(game, game::startGame, Melee.RABBIT_CHAT_PREFIX));
+			rabbitGameManager.addGame(rabbitArena.getName(), game, new PerMapLegacyLobby(game, PlayerProfile::restore, Melee.RABBIT_CHAT_PREFIX));
 		});
 		
 		// Log out what games were created
@@ -117,6 +117,14 @@ public class Melee extends JavaPlugin {
 	public void onDisable(){
 		meleeGameManager.stopAllGames();
 		rabbitGameManager.stopAllGames();
+	}
+	
+	public GameManager<MeleeGame> getMeleeGameManager() {
+		return meleeGameManager; 
+	}
+	
+	public GameManager<RabbitGame> getRabbitGameManager() {
+		return rabbitGameManager;
 	}
 	
 }
