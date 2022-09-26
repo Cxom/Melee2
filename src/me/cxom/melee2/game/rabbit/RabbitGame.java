@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import me.cxom.melee2.game.MeleeLikeGame;
-import me.cxom.melee2.game.melee.MeleeLikeEventListeners;
+import me.cxom.melee2.game.MeleeLikeEventListeners;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
@@ -41,7 +41,6 @@ import me.cxom.melee2.gui.rabbit.RabbitGUI;
 import me.cxom.melee2.player.MeleePlayer;
 import me.cxom.melee2.player.RabbitPlayer;
 import net.punchtree.minigames.game.GameState;
-import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.utility.collections.CirculatingList;
 import net.punchtree.minigames.utility.player.InventoryUtils;
 import net.punchtree.minigames.utility.player.PlayerUtils;

@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import me.cxom.melee2.game.MeleeLikeEventListeners;
 import me.cxom.melee2.game.MeleeLikeGame;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -248,7 +249,7 @@ public class MeleeGame implements MeleeLikeGame {
 		gui.playDeath(mpKilled, e, deathLocation);
 	}
 	
-	static boolean damageCauseIsProtected(DamageCause cause) {
+	public static boolean damageCauseIsProtected(DamageCause cause) {
 		//Fall Damage is off so movement system is non lethal
 		//Entity Explosion is off to prevent firework damage from kills
 		return cause == DamageCause.FALL || cause == DamageCause.ENTITY_EXPLOSION;

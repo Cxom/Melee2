@@ -1,4 +1,4 @@
-package me.cxom.melee2.game.melee;
+package me.cxom.melee2.game;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import me.cxom.melee2.game.MeleeLikeGame;
+import me.cxom.melee2.game.melee.MeleeGame;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
