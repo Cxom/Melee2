@@ -3,6 +3,7 @@ package me.cxom.melee2.game.rabbit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -10,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -46,9 +48,11 @@ class RabbitEventListeners implements Listener {
 	
 	@EventHandler
 	public void onPlayerDeath(EntityDamageEvent e){
-		
+
+		UUID entityId = e.getEntity().getUniqueId();
+
 		//Player's in game?
-		if (! (game.hasPlayer(e.getEntity().getUniqueId()))) return;
+		if (! (game.hasPlayer(entityId))) return;
 		Player killed = (Player) e.getEntity();
 		
 		//Actually killed?
@@ -63,21 +67,11 @@ class RabbitEventListeners implements Listener {
 			Entity killingEntity = edbee.getDamager();
 			
 			// Determine killer
-			if (killingEntity instanceof Player && game.hasPlayer(killingEntity.getUniqueId())){
-				//Killed by a player (also in game)
-				killer = (Player) killingEntity;	
-				
-			} else if (killingEntity instanceof Arrow && ((Arrow) killingEntity).getShooter() instanceof Player){
-				//Killed by an arrow shot by a player (not sure if player in game yet)
-				
-				Player shooter = (Player) ((Arrow) killingEntity).getShooter();
-				killingEntity.remove();
-				
-				if (game.hasPlayer(shooter.getUniqueId())){
-					//Player who shot arrow is in game
-					killer = shooter;
-					
-				}
+			if (isPlayerInGame(killingEntity)){
+				killer = (Player) killingEntity;
+			} else if (isShotByPlayerInGame(killingEntity)){
+				killer = (Player) ((Projectile) killingEntity).getShooter();
+				killingEntity.remove(); // Don't keep arrows around
 			}
 		}
 		
@@ -88,12 +82,20 @@ class RabbitEventListeners implements Listener {
 		}
 		
 	}
-	
-	
-	
-	
-	
-	
+
+	private boolean isPlayerInGame(Entity killingEntity) {
+		return killingEntity instanceof Player && game.hasPlayer(killingEntity.getUniqueId());
+	}
+
+	private boolean isShotByPlayerInGame(Entity killingEntity) {
+		if (killingEntity instanceof Projectile && ((Projectile) killingEntity).getShooter() instanceof Player) {
+			Player shooter = (Player) ((Projectile) killingEntity).getShooter();
+			return isPlayerInGame(shooter);
+		}
+		return false;
+	}
+
+
 	// Quit & Leave Events
 	
 		@EventHandler

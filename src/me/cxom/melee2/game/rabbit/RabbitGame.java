@@ -9,6 +9,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import me.cxom.melee2.game.MeleeLikeGame;
+import me.cxom.melee2.game.melee.MeleeLikeEventListeners;
 import org.bukkit.Bukkit;
 import org.bukkit.DyeColor;
 import org.bukkit.GameMode;
@@ -51,7 +53,7 @@ import net.punchtree.util.color.PunchTreeColor;
  * @author Cxom
  *
  */
-public class RabbitGame implements PvpGame, Listener {
+public class RabbitGame implements MeleeLikeGame, Listener {
 
 	// Class constants
 	public static final int POSTGAME_DURATION_SECONDS = 10;
@@ -104,7 +106,7 @@ public class RabbitGame implements PvpGame, Listener {
 		this.flagSpawnLocation = arena.getCenterpoint();
 		this.timeToWin = Math.round(arena.getFlagTimeToWin() * (20f / flagTaskRate));
 		this.gui = new RabbitGUI(this);
-		new RabbitEventListeners(this);
+		new MeleeLikeEventListeners(this);
 		
 		Bukkit.getServer().getPluginManager().registerEvents(this, Melee.getPlugin());
 	}
@@ -274,6 +276,9 @@ public class RabbitGame implements PvpGame, Listener {
 		// Reset other state
 		this.setLeader(null);
 		this.flagStatus = FlagStatus.NOT_IN_PLAY;
+		if (this.flagHolder != null) {
+			removeFlagFromPlayer(this.flagHolder);
+		}
 		this.flagHolder = null;
 		
 		removeDroppedFlag();
@@ -317,12 +322,17 @@ public class RabbitGame implements PvpGame, Listener {
 	 * @param player
 	 * @return The player removed (or null, if the player was not in the game)
 	 */
-	boolean removePlayerFromGame(Player player) {
+	public boolean removePlayerFromGame(Player player) {
 		//TODO maybe send message if player still in 
 		
 		//Is the remove request valid?
 		if (!hasPlayer(player.getUniqueId())) return false;
-		
+
+		RabbitPlayer rp = players.get(player.getUniqueId());
+		if (rp.equals(this.flagHolder)) {
+			dropFlag(player.getLocation());
+		}
+
 		// Reverse order of how added
 		movement.removePlayer(player);
 		players.remove(player.getUniqueId());
@@ -398,6 +408,7 @@ public class RabbitGame implements PvpGame, Listener {
 	
 	private void removeFlagFromPlayer(RabbitPlayer rp) {
 		InventoryUtils.equipPlayer(rp.getPlayer(), rp.getColor());
+		flagHolder.getPlayer().setGlowing(false);
 	}
 	
 	// TODO all events outside this class?
@@ -421,23 +432,22 @@ public class RabbitGame implements PvpGame, Listener {
 	}
 	
 	private void dropFlag(Location flagHolderDeathLocation) {
-		
 		RabbitPlayer flagDropper = getFlagHolder();
 		
 		MovementPlayer mvrp = MovementPlusPlus.getMovementPlayer(flagDropper.getUniqueId());
 		mvrp.setMaxStamina(mvrp.getMaxStamina() / 2);
 		
 		removeFlagFromPlayer(flagHolder);
-		flagHolder.getPlayer().setGlowing(false);
 		this.flagHolder = null;
 		
 		Block droppedFlagBlock = flagHolderDeathLocation.getBlock();
 		while(droppedFlagBlock.getType() != Material.AIR) {
 			droppedFlagBlock = droppedFlagBlock.getRelative(BlockFace.UP);
-			if (droppedFlagBlock.getY() >= 255) {
+			if (droppedFlagBlock.getY() >= flagHolderDeathLocation.getBlockY() + 3) {
 				//TODO do this properly
 				Bukkit.broadcastMessage("Could not spawn dropped flag!! Respawning at spawn immediately");
 				spawnFlagAtCenter();
+				break;
 			}
 		}
 		
@@ -473,7 +483,7 @@ public class RabbitGame implements PvpGame, Listener {
 	// ---- EVENT RESPONDERS ---- //
 	// -------------------------- //
 	
-	void handleKill(Player killer, Player killed, EntityDamageByEntityEvent e){
+	public void handleKill(Player killer, Player killed, EntityDamageByEntityEvent e){
 		
 		if (getGameState() != GameState.RUNNING) return;
 		
@@ -503,7 +513,7 @@ public class RabbitGame implements PvpGame, Listener {
 		gui.playKill(rpKiller, rpKilled, e, killLocation);
 	}
 	
-	void handleDeath(Player killed, EntityDamageEvent e){
+	public void handleDeath(Player killed, EntityDamageEvent e){
 		RabbitPlayer rpKilled = getPlayer(killed.getUniqueId());
 		Location deathLocation = killed.getLocation();
 		

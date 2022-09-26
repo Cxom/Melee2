@@ -1,21 +1,11 @@
 package me.cxom.melee2;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.cxom.melee2.arena.MeleeArena;
@@ -27,7 +17,6 @@ import net.punchtree.minigames.arena.creation.ArenaManager;
 import net.punchtree.minigames.game.GameManager;
 import net.punchtree.minigames.lobby.PerMapLegacyLobby;
 import net.punchtree.minigames.menu.MinigameMenu;
-import net.punchtree.minigames.utility.player.InventoryUtils;
 import net.punchtree.minigames.utility.player.PlayerProfile;
 
 public class Melee extends JavaPlugin {

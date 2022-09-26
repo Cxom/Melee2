@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import me.cxom.melee2.game.MeleeLikeGame;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -24,7 +25,6 @@ import me.cxom.melee2.arena.MeleeArena;
 import me.cxom.melee2.gui.melee.MeleeGUI;
 import me.cxom.melee2.player.MeleePlayer;
 import net.punchtree.minigames.game.GameState;
-import net.punchtree.minigames.game.PvpGame;
 import net.punchtree.minigames.utility.collections.CirculatingList;
 import net.punchtree.minigames.utility.player.PlayerUtils;
 import net.punchtree.util.color.PunchTreeColor;
@@ -34,7 +34,7 @@ import net.punchtree.util.color.PunchTreeColor;
  * The game object is persistent across games
  * @author Cxom
  */
-public class MeleeGame implements PvpGame {
+public class MeleeGame implements MeleeLikeGame {
 	
 	// Class constants
 	public static final int POSTGAME_DURATION_SECONDS = 10;
@@ -56,7 +56,7 @@ public class MeleeGame implements PvpGame {
 		this.arena = arena;
 		this.spawns = new CirculatingList<Location>(arena.getSpawns(), true);
 		gui = new MeleeGUI(this);
-		new MeleeEventListeners(this);
+		new MeleeLikeEventListeners(this);
 	}
 
 	// -------------------------- //
@@ -96,9 +96,6 @@ public class MeleeGame implements PvpGame {
 	
 	public boolean hasPlayer(UUID uniqueId) {
 		return players.containsKey(uniqueId); 
-	}
-	public boolean hasPlayer(Player player) { 
-		return hasPlayer(player.getUniqueId()); 
 	}
 
 	// -------end-getters-------- //
@@ -165,7 +162,7 @@ public class MeleeGame implements PvpGame {
 		movement.addPlayer(mp.getPlayer());
 	}
 	
-	boolean removePlayerFromGame(Player player) {
+	public boolean removePlayerFromGame(Player player) {
 		
 		//Is the remove request valid?
 		if (!hasPlayer(player.getUniqueId())) return false;
@@ -200,7 +197,7 @@ public class MeleeGame implements PvpGame {
 	// -------------------------- //
 	
 	
-	void handleKill(Player killer, Player killed, EntityDamageByEntityEvent e){
+	public void handleKill(Player killer, Player killed, EntityDamageByEntityEvent e){
 		
 		if (getGameState() != GameState.RUNNING) return;
 		
@@ -238,7 +235,7 @@ public class MeleeGame implements PvpGame {
 		    || killer.getKills() > this.getLeader().getKills();
 	}
 	
-	void handleDeath(Player killed, EntityDamageEvent e){
+	public void handleDeath(Player killed, EntityDamageEvent e){
 		MeleePlayer mpKilled = getPlayer(killed.getUniqueId());
 		Location deathLocation = killed.getLocation();
 		

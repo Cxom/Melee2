@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import me.cxom.melee2.game.MeleeLikeGame;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Entity;
@@ -30,11 +31,11 @@ import me.cxom.melee2.Melee;
  * As such, it listens to events in the game, and propagates to the M, V, and C layers
  * as appropriate.
  */
-class MeleeEventListeners implements Listener {
+public class MeleeLikeEventListeners implements Listener {
 	
-	private final MeleeGame game;
+	private final MeleeLikeGame game;
 	
-	MeleeEventListeners(MeleeGame game) {
+	public MeleeLikeEventListeners(MeleeLikeGame game) {
 		this.game = game;
 		Bukkit.getPluginManager().registerEvents(this, Melee.getPlugin());
 	}
@@ -131,6 +132,10 @@ class MeleeEventListeners implements Listener {
 			e.setCancelled(true);
 		}
 	}
+
+	private boolean entityIsInGame(Entity entity) {
+		return entity instanceof Player && game.hasPlayer(entity.getUniqueId());
+	}
 	
 	@EventHandler
 	public void onPlayerOpenInventoryEvent(InventoryOpenEvent e) {
@@ -151,10 +156,6 @@ class MeleeEventListeners implements Listener {
 		if (game.hasPlayer(e.getPlayer())) {
 			e.setCancelled(true);
 		}
-	}
-	
-	private boolean entityIsInGame(Entity entity) {
-		return entity instanceof Player && game.hasPlayer(entity.getUniqueId());
 	}
 	
 	private static final List<String> cmds = new ArrayList<String>(Arrays.asList(new String[] {
