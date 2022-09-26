@@ -434,7 +434,12 @@ public class RabbitGame implements MeleeLikeGame, Listener {
 		RabbitPlayer flagDropper = getFlagHolder();
 		
 		MovementPlayer mvrp = MovementPlusPlus.getMovementPlayer(flagDropper.getUniqueId());
-		mvrp.setMaxStamina(mvrp.getMaxStamina() / 2);
+		if (mvrp != null) {
+			// This check is required because the movement player is removed by the movement system the moment a player leaves the server
+			// So the dropFlag call that happens when a player leaves the server will cause a null pointer exception
+			// Ideally, find a better way to resolve this issue
+			mvrp.setMaxStamina(mvrp.getMaxStamina() / 2);
+		}
 		
 		removeFlagFromPlayer(flagHolder);
 		this.flagHolder = null;
