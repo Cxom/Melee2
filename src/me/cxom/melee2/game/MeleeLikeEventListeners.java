@@ -45,15 +45,19 @@ public class MeleeLikeEventListeners implements Listener {
 	
 	@EventHandler
 	public void onPlayerDeath(EntityDamageEvent e){
-		
-		UUID entityId = e.getEntity().getUniqueId();
-		
+
 		//Is the player in the game?
-		if (!game.hasPlayer(entityId)) return;
+		if (!isPlayerInGame(e.getEntity())) return;
 		Player killed = (Player) e.getEntity();
+
+		//Is it disabled damage?
+		if (MeleeGame.damageCauseIsProtected(e.getCause())) {
+			e.setCancelled(true);
+			return;
+		}
 		
 		//Is the damage lethal?
-		if (e.getFinalDamage() < killed.getHealth()) return;
+		if (!isDamageLethal(e, killed)) return;
 		
 		Player killer = null;
 		EntityDamageByEntityEvent edbee = null;
@@ -83,13 +87,15 @@ public class MeleeLikeEventListeners implements Listener {
 	private boolean isPlayerInGame(Entity killingEntity) {
 		return killingEntity instanceof Player && game.hasPlayer(killingEntity.getUniqueId());
 	}
-	
+
+	private boolean isDamageLethal(EntityDamageEvent ede, Player killed) {
+		return ede.getFinalDamage() >= killed.getHealth();
+	}
+
 	private boolean isShotByPlayerInGame(Entity killingEntity) {
-		if (killingEntity instanceof Projectile && ((Projectile) killingEntity).getShooter() instanceof Player) {
-			Player shooter = (Player) ((Projectile) killingEntity).getShooter();
-			return isPlayerInGame(shooter);
-		}
-		return false;
+		return killingEntity instanceof Projectile projectile
+				&& projectile.getShooter() instanceof Player shooter
+				&& isPlayerInGame(shooter);
 	}
 	
 	
@@ -112,13 +118,8 @@ public class MeleeLikeEventListeners implements Listener {
 	}
 
 	// Cancelled Events
-		
-	@EventHandler
-	public void onEnvironmentDamage(EntityDamageEvent e) {
-		if (entityIsInGame(e.getEntity()) && MeleeGame.damageCauseIsProtected(e.getCause())){
-			e.setCancelled(true);
-		}
-	}
+
+	// Environment damage is cancelled in the EntityDamageEvent handler up above
 
 	@EventHandler
 	public void onFoodLevelChange(FoodLevelChangeEvent e) {

@@ -523,9 +523,8 @@ public class RabbitGame implements MeleeLikeGame, Listener {
 		
 		e.setCancelled(true);
 		//Let player take non-fatal damage that isn't caused by a fall or firework explosion
-		if (e.getCause() != DamageCause.FALL && e.getCause() != DamageCause.ENTITY_EXPLOSION){
-			((Player) e.getEntity()).setHealth(1);
-		}
+		assert(!damageCauseIsProtected(e.getCause()));
+		killed.setHealth(1);
 
 		gui.playDeath(rpKilled, e, deathLocation);
 	}

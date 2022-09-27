@@ -241,11 +241,10 @@ public class MeleeGame implements MeleeLikeGame {
 		Location deathLocation = killed.getLocation();
 		
 		e.setCancelled(true);
-		
-		if (!damageCauseIsProtected(e.getCause())){
-			((Player) e.getEntity()).setHealth(1);
-		}
-		
+		//Let player take non-fatal damage that isn't caused by a fall or firework explosion
+		assert(!damageCauseIsProtected(e.getCause()));
+		killed.setHealth(1);
+
 		gui.playDeath(mpKilled, e, deathLocation);
 	}
 	
