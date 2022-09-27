@@ -20,9 +20,11 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import me.cxom.melee2.Melee;
@@ -145,7 +147,21 @@ public class MeleeLikeEventListeners implements Listener {
 			e.setCancelled(true);
 		}
 	}
-	
+
+	@EventHandler
+	public void onPlayerDropItem(PlayerDropItemEvent e) {
+		if (game.hasPlayer(e.getPlayer())) {
+			e.setCancelled(true);
+		}
+	}
+
+	@EventHandler
+	public void onPlayerDragItemInInventory(InventoryDragEvent e) {
+		if (game.hasPlayer(e.getWhoClicked().getUniqueId())) {
+			e.setCancelled(true);
+		}
+	}
+
 	@EventHandler
 	public void onPlayerBlockBreak(BlockBreakEvent e) {
 		if (game.hasPlayer(e.getPlayer())) {
