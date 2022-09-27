@@ -118,7 +118,7 @@ public class MeleeGUI {
 		//Send chat messages
 		killer.getPlayer().sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.GRAY + "You now have "
 												+ ChatColor.AQUA + killer.getKills()
-												+ ChatColor.GRAY + " kill(s).");
+												+ ChatColor.GRAY + " kill" + (killer.getKills() == 1 ? "" : "s") + ".");
 		killed.getPlayer().sendMessage(Melee.MELEE_CHAT_PREFIX + killer.getColor().getChatColor() + killer.getPlayer().getName()
 											 	+ " (" + killer.getKills() + ") killed you!");
 
