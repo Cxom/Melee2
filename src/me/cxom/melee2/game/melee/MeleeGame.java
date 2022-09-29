@@ -18,6 +18,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.trinoxtion.movement.MovementPlayer;
 import com.trinoxtion.movement.MovementPlusPlus;
 import com.trinoxtion.movement.MovementSystem;
 
@@ -283,6 +284,9 @@ public class MeleeGame implements MeleeLikeGame {
 		
 		PlayerUtils.perfectStats(player);
 	
+		MovementPlayer movementPlayer = MovementPlusPlus.getMovementPlayer(player);
+		movementPlayer.setStamina(movementPlayer.getMaxStamina());
+		
 		// TODO FINISH BEST SPAWN LOGIC
 		
 //		Location bestSpawn = getSpawns().next();
