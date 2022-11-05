@@ -113,7 +113,7 @@ public class MeleeGUI {
 		PvpCommonPolish.playDeathPolish(killed.getPlayer(), killed.getColor());
 		
 		updateBossBarOnKill(killer);
-		tablist.updatePlayer(killer);
+		tablist.addKill(killer);
 		
 		//Send chat messages
 		killer.getPlayer().sendMessage(Melee.MELEE_CHAT_PREFIX + ChatColor.GRAY + "You now have "
