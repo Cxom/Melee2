@@ -1,15 +1,12 @@
 package me.cxom.melee2.game.melee;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import me.cxom.melee2.game.MeleeLikeEventListeners;
 import me.cxom.melee2.game.MeleeLikeGame;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -89,7 +86,7 @@ public class MeleeGame implements MeleeLikeGame {
 	}
 	
 	public Collection<MeleePlayer> getPlayers(){
-		return players.values();
+		return Collections.unmodifiableCollection(players.values());
 	}
 	
 	public CirculatingList<Location> getSpawns(){
@@ -132,12 +129,16 @@ public class MeleeGame implements MeleeLikeGame {
 	
 	void resetGame() {
 		gui.reset();
-		
+
 		// Remove all players (same as removePlayer)
 		this.players.keySet().forEach(movement::removePlayer);
-		this.players.values().stream().map(MeleePlayer::getPlayer).forEach(onPlayerLeaveGame);
+
+		// DON'T forEach THIS, it will throw a ConcurrentModificationException? Not sure why
+		for (MeleePlayer mp : this.players.values()) {
+			onPlayerLeaveGame.accept(mp.getPlayer());
+		}
 		this.players.clear();
-		
+
 		
 		// Circulating list already reshuffles and reiterates, but this prevents a double spawn on game start
 		this.spawns.shuffle();

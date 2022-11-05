@@ -285,9 +285,12 @@ public class RabbitGame implements MeleeLikeGame, Listener {
 		removeFlagAtCenter();
 		
 		notifyGameReset(this.players.values());
-		
-		this.players.values().stream().map(MeleePlayer::getPlayer).forEach(onPlayerLeaveGame);
-		
+
+		// DON'T forEach THIS, it will throw a ConcurrentModificationException? Not sure why
+		for (MeleePlayer mp : this.players.values()) {
+			onPlayerLeaveGame.accept(mp.getPlayer());
+		}
+
 		this.setState(GameState.WAITING);
 		
 		this.players.clear();
