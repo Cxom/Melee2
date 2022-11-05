@@ -65,8 +65,9 @@ public class RabbitGame implements MeleeLikeGame, Listener {
 	private final MovementSystem movement = MovementPlusPlus.CXOMS_MOVEMENT;
 	
 	// Flag constants
-	private final int firstFlagSpawnDelay = 15; // seconds
-	private final double flagPickupRadius = 1.5;
+	private static final int firstFlagSpawnDelay = 15; // seconds
+	public static final int FLAG_RESPAWN_AT_CENTER_DELAY = 10;
+	private static final double flagPickupRadius = 1.5;
 	private final int flagTaskRate = 5;
 	private final int timeToWin;
 	
@@ -80,7 +81,7 @@ public class RabbitGame implements MeleeLikeGame, Listener {
 
 	//private Map<UUID, Integer> progress = new HashMap<>();
 	private RabbitPlayer flagLeader = null;
-	
+
 	// Flag state
 	public enum FlagStatus {
 		NOT_IN_PLAY,
@@ -121,9 +122,9 @@ public class RabbitGame implements MeleeLikeGame, Listener {
 				flagHolder.decrementFlagCounter();
 				checkForWinner();
 				
-//				} else if (flagHolder.getFlagCounter() < getFlagLeader().getFlagCounter()) {
-//					setLeader(flagHolder);
-//				}
+				if (getFlagLeader() == null || flagHolder.getFlagCounter() < getFlagLeader().getFlagCounter()) {
+					setLeader(flagHolder);
+				}
 				
 			} else if (RabbitGame.this.getFlagStatus() == FlagStatus.DROPPED) {
 				
@@ -135,7 +136,6 @@ public class RabbitGame implements MeleeLikeGame, Listener {
 				this.cancel();
 				
 				runPostgameWithWinner(flagHolder);
-				
 			}
 		}
 	}
@@ -447,11 +447,16 @@ public class RabbitGame implements MeleeLikeGame, Listener {
 		Block droppedFlagBlock = flagHolderDeathLocation.getBlock();
 		while(droppedFlagBlock.getType() != Material.AIR) {
 			droppedFlagBlock = droppedFlagBlock.getRelative(BlockFace.UP);
+
+			// TODO once rabbit flag is an armor stand display and not a block, this should be like a 2 block radius, but be put anywhere non-solid (so water, plants ok)
 			if (droppedFlagBlock.getY() >= flagHolderDeathLocation.getBlockY() + 3) {
-				//TODO do this properly
-				Bukkit.broadcastMessage("Could not spawn dropped flag!! Respawning at spawn immediately");
-				spawnFlagAtCenter();
-				break;
+				new BukkitRunnable() {
+					public void run() {
+						spawnFlagAtCenter();
+					}
+				}.runTaskLater(Melee.getPlugin(Melee.class), FLAG_RESPAWN_AT_CENTER_DELAY * 20);
+				gui.playFlagRespawnAtCenter();
+				return;
 			}
 		}
 		

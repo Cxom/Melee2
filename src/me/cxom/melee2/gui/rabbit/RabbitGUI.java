@@ -5,10 +5,7 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.Location;
+import org.bukkit.*;
 import org.bukkit.boss.BarColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -101,20 +98,9 @@ public class RabbitGUI implements RabbitGameObserver {
 		bossbar.setColor(BarColor.YELLOW);
 		
 		final int nowPlayingMessageDuration = 3;
-		
-		new BukkitRunnable() {
-			
-			int countdown = game.getInitialFlagSpawnDelay() - nowPlayingMessageDuration;
-			
-			public void run() {
-				bossbar.setMessage(flagString + ChatColor.RED + " The flag will spawn in " + ChatColor.GRAY + countdown + ChatColor.RED + " seconds! " + flagString);
-				countdown--;
-				if (countdown <= 0) {
-					this.cancel();
-				}
-			}
-		}.runTaskTimerAsynchronously(Melee.getPlugin(Melee.class), 20 * nowPlayingMessageDuration, 20);
-		
+
+		playFlagCountdown(game.getInitialFlagSpawnDelay() - nowPlayingMessageDuration, nowPlayingMessageDuration);
+
 		game.getPlayers().forEach(mp -> {
 			Player player = mp.getPlayer();
 			
@@ -125,7 +111,22 @@ public class RabbitGUI implements RabbitGameObserver {
 		
 	}
 
-	
+	private void playFlagCountdown(int countdownLength, int delaySeconds) {
+		new BukkitRunnable() {
+
+			int countdown = countdownLength;
+
+			public void run() {
+				bossbar.setMessage(flagString + ChatColor.RED + " The flag will spawn in " + ChatColor.GRAY + countdown + ChatColor.RED + " seconds! " + flagString);
+				countdown--;
+				if (countdown <= 0) {
+					this.cancel();
+				}
+			}
+		}.runTaskTimerAsynchronously(Melee.getPlugin(Melee.class), 20 * delaySeconds, 20);
+	}
+
+
 	public void playKill(RabbitPlayer killer, RabbitPlayer killed, EntityDamageByEntityEvent e, Location killLocation) {
 		
 //		FireworkUtils.detontateInstantly(FireworkUtils.spawnFirework(killLocation.add(0, 1.1, 0), killed.getColor(), killer.getColor(), 0));
@@ -232,7 +233,15 @@ public class RabbitGUI implements RabbitGameObserver {
 	private final String flagString = "" + ChatColor.GOLD + ChatColor.ITALIC + ChatColor.BOLD + "⚑" + ChatColor.RESET;
 	
 	private BukkitTask flagCounterTask;
-	
+
+	public void playFlagRespawnAtCenter() {
+		broadcast(Melee.RABBIT_CHAT_PREFIX + ChatColor.GRAY + "Flag dropped in impossible location. Respawning at the center in 10 seconds!");
+
+		players.forEach(player -> player.getPlayer().playSound(player.getPlayer().getLocation(), Sound.BLOCK_BELL_USE, 1, 1));
+
+		playFlagCountdown(RabbitGame.FLAG_RESPAWN_AT_CENTER_DELAY, 0);
+	}
+
 	private final class FlagCounter extends BukkitRunnable {
 		
 		private RabbitPlayer flagHolder; 
