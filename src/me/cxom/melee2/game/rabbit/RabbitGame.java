@@ -118,7 +118,7 @@ public class RabbitGame implements MeleeLikeGame, Listener {
 		@Override
 		public void run() {
 			if (RabbitGame.this.getFlagStatus() == FlagStatus.HELD) {
-				
+
 				flagHolder.decrementFlagCounter();
 				checkForWinner();
 				
@@ -442,6 +442,7 @@ public class RabbitGame implements MeleeLikeGame, Listener {
 		}
 		
 		removeFlagFromPlayer(flagHolder);
+		setFlagStatus(FlagStatus.NOT_IN_PLAY);
 		this.flagHolder = null;
 		
 		Block droppedFlagBlock = flagHolderDeathLocation.getBlock();

@@ -252,7 +252,8 @@ public class RabbitGUI implements RabbitGameObserver {
 		
 		@Override
 		public void run() {
-			if (game.getFlagStatus() != FlagStatus.HELD || ! game.getFlagHolder().equals(flagHolder)) {
+			// NOTE - ORDER MATTERS ON THE SECOND CONDITION - game.getFlagHolder() may be null if the flag is dropped
+			if (game.getFlagStatus() != FlagStatus.HELD || !flagHolder.equals(game.getFlagHolder())) {
 				this.cancel();
 				return;
 			}
