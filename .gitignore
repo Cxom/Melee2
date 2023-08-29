@@ -1,2 +1,15 @@
 /bin/
 /target/
+
+### Eclipse (it can actually be a good idea to commit this if using eclipse but we're not) ###
+.classpath
+.project
+.settings/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+*.iml
+

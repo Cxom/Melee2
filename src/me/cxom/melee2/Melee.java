@@ -64,13 +64,17 @@ public class Melee extends JavaPlugin {
 		allLobbies.addAll(meleeGameManager.getLobbyList());
 		allLobbies.addAll(rabbitGameManager.getLobbyList());
 		allLobbiesMenu = new MinigameMenu("All Games", allLobbies);
-		
+
+		setCommandExecutors();
+	}
+
+	private void setCommandExecutors() {
 		commandExecutor = new MeleeAndRabbitCommandExecutor(rabbitGameManager, meleeGameManager, allLobbiesMenu, meleeArenaManager, getLogger(), meleeArenaFolder);
 		getCommand("melee").setExecutor(commandExecutor);
 		getCommand("rabbit").setExecutor(commandExecutor);
 		getCommand("games").setExecutor(commandExecutor);
 	}
-	
+
 	/**
 	 * Load arenas and create a game for each
 	 */

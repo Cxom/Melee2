@@ -61,26 +61,29 @@ public class MeleeGame implements MeleeLikeGame {
 	// -------------------------- //
 	//-------- GETTERS ---------- //
 	// -------------------------- //
+	@Override
 	public MeleeArena getArena(){
 		return arena;
 	}
-	
+
+	@Override
 	public GameState getGameState(){
 		return gamestate; 
 	}
-	
+
+	@Override
+	public String getName() {
+		return "Melee";
+	}
+
 	public int getKillsNeededToWin() {
 		return arena.getKillsToEnd();
 	}
-	
+
 	public MeleePlayer getLeader() {
 		return leader;
 	}
 
-	public String getName() {
-		return "Melee";
-	}
-	
 	public MeleePlayer getPlayer(UUID uniqueId) {
 		return players.get(uniqueId);
 	}
