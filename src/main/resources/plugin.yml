@@ -1,0 +1,20 @@
+name: Melee
+main: net.punchtree.melee.Melee
+version: 0.11.0
+api-version: 1.20
+author: Cxom (Jeremy Karevich)
+description: Fast-paced free-for-all PVP with a custom movement system
+depend: [PunchTree-Minigames, MovementPlusPlus]
+
+commands:
+    melee:
+        usage: /melee [leave|join <game>]
+        description: For the Melee minigame.
+    rabbit:
+        usage: /rabbit [leave|join <game>]
+        description: For the Rabbit minigame.
+    games:
+
+permissions:
+    melee.admin:
+        default: false

@@ -1,6 +1,15 @@
 /bin/
 /target/
 
+.gradle
+.gradle/
+.idea/gradle.xml
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+
 ### Eclipse (it can actually be a good idea to commit this if using eclipse but we're not) ###
 .classpath
 .project
